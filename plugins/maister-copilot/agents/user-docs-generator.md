@@ -124,24 +124,25 @@ The user documentation generator transforms technical specifications into user-f
 
 ---
 
-### 3.5. Check E2E Screenshot Reuse (Optional)
+### 3.5. Reuse E2E Screenshots (Required when `e2e_screenshots_path` is provided)
 
-**Purpose**: Reuse existing E2E test screenshots when applicable
+**Purpose**: Reuse existing E2E screenshots before capturing new ones. The orchestrator (Phase 13 of `maister-development`) passes `e2e_screenshots_path` whenever Phase 12 ran successfully. Phase 12 and Phase 13 share the same Playwright MCP browser, so every screenshot already produced by E2E must be reused rather than re-captured.
 
 **Actions**:
-- Check if `verification/screenshots/` directory exists
-- If exists, list available screenshots with filenames
-- Identify screenshots applicable to user documentation workflows
-- Note which E2E screenshots can be reused instead of re-capturing
-- Benefits: Consistency between tests and docs, reduced capture time
+- If the prompt includes `e2e_screenshots_path`: list every file in that directory. This step is mandatory — do NOT skip to Step 4 until the inventory exists.
+- If `e2e_screenshots_path` is absent, fall back to checking `verification/screenshots/` for an existing inventory (may exist from a prior run).
+- For each documentation step you plan to illustrate, decide whether one of the listed E2E screenshots already covers the same UI state. If yes, reference that file (it will be copied in Step 7) and DO NOT re-capture via Playwright.
+- Only the documentation steps with no matching E2E capture proceed to Step 4 for fresh Playwright captures.
 
-**Output**: List of E2E screenshots available for reuse
+**Output**: A reuse plan — for each documentation step, either the chosen E2E filename (reused) or a note that a fresh capture is needed in Step 4.
 
 ---
 
 ### 4. Capture Screenshots
 
-**Purpose**: Take clear, professional screenshots for each step
+**Purpose**: Take clear, professional screenshots for each step **that wasn't already covered by an E2E screenshot in Step 3.5**.
+
+**Precondition**: Step 3.5 must have run. Capture only the documentation steps left without a reused E2E screenshot. If Step 3.5 mapped every step to an existing capture, skip Playwright entirely.
 
 **Using Playwright MCP Tools**:
 - Navigate to feature URL
@@ -262,9 +263,10 @@ The user documentation generator transforms technical specifications into user-f
 - Create `[task-path]/documentation/screenshots/` directory
 - Read generated user guide from `[task-path]/documentation/user-guide.md`
 - Extract image references: `!\[.*?\]\(screenshots/(.*?\.png)\)`
-- For each referenced screenshot, check sources in order:
-  1. `verification/screenshots/` (reused from E2E tests)
-  2. `.playwright-mcp/` (newly captured)
+- For each referenced screenshot, check sources in this priority order:
+  1. `e2e_screenshots_path` from the orchestrator prompt (preferred — reused from Phase 12 E2E run)
+  2. `verification/screenshots/` (fallback discovery when `e2e_screenshots_path` was not provided)
+  3. `.playwright-mcp/` (newly captured in Step 4)
 - Copy to `documentation/screenshots/`: `cp SOURCE_PATH documentation/screenshots/`
 - Verify copied: `test -f documentation/screenshots/FILENAME`
 - Error if any referenced screenshot missing

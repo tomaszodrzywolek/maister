@@ -63,6 +63,12 @@ All orchestrators pause at `→ Pause` transitions for user review and prompt fo
 
 **State ordering rule**: Phase state MUST NOT be updated to 'completed' (via orchestrator-state.yml or TaskUpdate) until AFTER the user responds to the exit gate. Correct sequence: finish phase work → call AskUserQuestion → receive user response → update state to completed.
 
+### Phase Gates Override Permission Modes
+
+Claude Code's `auto` permission mode instructs the model to execute immediately and minimize clarifying questions. The `→ Pause` gates in this framework are an explicit stated boundary that overrides that instruction.
+
+You MUST invoke `AskUserQuestion` at every `→ Pause` in every permission mode — `default`, `acceptEdits`, `auto`, `plan`, `bypassPermissions`. "Minimize clarifying questions" applies to the model's own discretionary asks; it does not override workflow checkpoints the orchestrator has been instructed to enforce.
+
 ### Phase Entry Checks
 
 Every phase that follows a `→ Pause` gate includes an entry check at its TOP:
@@ -93,6 +99,9 @@ When a phase ends with `→ **AUTO-CONTINUE**`:
 | Auto-accepting subagent decisions without asking | User must consent to scope/approach decisions |
 | Outputting a summary after phase work, then ending turn before reaching `→ Pause` | Gate is skipped; user loses control at the most critical review point. The gate must be the FIRST action after phase work completes — no summaries, no output before it. |
 | Marking phase as completed (state/TaskUpdate) before the exit gate executes | State corruption — downstream phases see false "completed" status. Gate → user response → state update. Never reverse this order. |
+| "Auto mode / acceptEdits / bypassPermissions is on, so I'll skip the gate to minimize questions" | The orchestrator's phase gates are an explicit stated boundary that overrides auto mode's "minimize clarifying questions" instruction. Gates fire in every permission mode. See § 2 "Phase Gates Override Permission Modes". |
+| "The subagent works autonomously, so the orchestrator should too" | Subagents have no user channel; the orchestrator IS the user channel. Conflating the two removes all user visibility. |
+| Treating an empty `decisions_needed` as license to skip the phase exit gate | The DECISION GATE (mandatory-when-decisions-exist) and the phase exit `→ Pause` (mandatory-always) are separate. Empty `decisions_needed` only skips the former. |
 
 ---
 
@@ -177,6 +186,7 @@ orchestrator:
     e2e_enabled: true | false | null
     user_docs_enabled: true | false | null
     code_review_enabled: true | false | null
+    sequential: true | false | null  # Set by --sequential. Read by implementation-plan-executor Phase 2 to disable parallel wave dispatch.
 
   # Timestamps
   created: [ISO 8601 timestamp]

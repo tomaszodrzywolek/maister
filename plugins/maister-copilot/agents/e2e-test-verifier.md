@@ -36,8 +36,9 @@ This agent focuses on **evidence-based runtime verification**, not test file gen
 | `task_path` | Orchestrator | **Absolute path** to task directory. ALL outputs MUST be written under this path. |
 | `spec_path` | Orchestrator | Path to spec.md |
 | `base_url` | Orchestrator | Application base URL for Playwright |
+| `design_context_path` | Orchestrator (optional) | Path to `analysis/design-context/` when mockups are present. Triggers visual-fidelity comparison (Step 7) and writes `verification/visual-fidelity.md`. |
 
-**CRITICAL**: Always use `task_path` as the root for ALL file writes. Save report to `{task_path}/verification/e2e-verification-report.md`, screenshots to `{task_path}/verification/screenshots/`. NEVER write to project-level directories.
+**CRITICAL**: Always use `task_path` as the root for ALL file writes. Save report to `{task_path}/verification/e2e-verification-report.md`, screenshots to `{task_path}/verification/screenshots/`, visual fidelity report to `{task_path}/verification/visual-fidelity.md` (when design_context_path provided). NEVER write to project-level directories.
 
 ---
 
@@ -153,61 +154,150 @@ This agent focuses on **evidence-based runtime verification**, not test file gen
 
 ### 5. Generate Verification Report
 
-**Purpose**: Create comprehensive evidence-based report
-
-**Report Structure**:
-
-**Executive Summary**:
-- Overall status (✅ PASSED | ⚠️ PASSED WITH ISSUES | ❌ FAILED)
-- Test summary (total scenarios, passed, failed, pass rate)
-- User stories verification status
-- Issue counts by severity
-
-**Verification Scenarios**:
-For each scenario:
-- User story being tested
-- Test steps in table format (Step | Action | Expected | Actual | Status)
-- Pass/fail result with step count
-- Issues found with references
-- Screenshot links
-- Acceptance criteria checklist
-
-**Discrepancies**:
-Categorized by severity (Critical/Major/Minor/Cosmetic):
-- Spec requirement description
-- Expected vs actual behavior
-- Evidence (screenshots, console errors, network responses)
-- Root cause hypothesis
-- User impact assessment
-- Recommended fix
-- Workaround (if available)
-
-**Console Errors**:
-- Error messages with source file/line
-- Frequency and context
-- Impact assessment
-
-**Spec Alignment Analysis**:
-- Fully implemented requirements
-- Partially implemented requirements
-- Missing requirements
-- Extra features not in spec
-
-**Recommendations**:
-- Must fix (blocking deployment)
-- Should fix (before release)
-- Nice to have (future improvements)
-
-**Test Environment**:
-- Application URL, browser, viewport
-- Test date and tester identification
-
-**Conclusion**:
-- Deployment recommendation (GO / NO-GO / GO WITH CAVEATS)
-- Justification based on findings
-- Next steps
+**Purpose**: Create a consistent, evidence-based report. The report MUST follow the canonical 12-section template below — same headings, same order, every run. This is what downstream phases, code reviews, and humans depend on.
 
 **Save Location**: `[task-path]/verification/e2e-verification-report.md`
+
+**Strict rules** (apply on every run, no exceptions):
+
+1. Include **all 12 sections** in the numbered order shown below. Do not omit, do not add, do not reorder.
+2. Use the **exact heading text** shown (including the `## N. Title` numbering).
+3. If a section has no content, write `_None observed._` (or `_None._` where the template indicates) — do **NOT** delete the heading.
+4. Severity is exactly one of: **Critical · Major · Minor · Cosmetic** (matches §4 severity ladder). No "warning", "blocker", or other synonyms.
+5. Status icons are exactly: **✅** (passed/match) · **⚠️** (passed with issues / minor deviation) · **❌** (failed/drift). No other glyphs.
+6. Verdict is exactly one of: **GO · GO WITH CAVEATS · NO-GO**.
+7. Screenshot references use the relative path form `screenshots/{filename}.png` — never absolute paths, never `verification/screenshots/…`.
+8. Executive Summary metrics must be arithmetically consistent: `planned ≥ executed`, `executed = passed + failed + blocked`.
+
+#### Canonical Report Template
+
+````markdown
+# E2E Verification Report
+
+## 1. Identifier
+- **Task**: {task-name}
+- **Task path**: {task_path}
+- **Spec**: {spec_path}
+- **Date**: {YYYY-MM-DD}
+- **Git ref**: {short SHA + branch}
+- **Tester**: e2e-test-verifier (maister)
+
+## 2. Test Environment
+| Field | Value |
+|---|---|
+| Base URL | {base_url} |
+| Browser | {playwright browser + version} |
+| Viewport | {width}×{height} |
+| Auth context | {anonymous / role-name / user identifier} |
+| Test data | {seeded / fixture / live} |
+
+## 3. Executive Summary
+**Verdict**: ✅ GO  |  ⚠️ GO WITH CAVEATS  |  ❌ NO-GO  *(pick exactly one)*
+
+| Metric | Count |
+|---|---|
+| Scenarios planned | N |
+| Scenarios executed | N |
+| Passed | N |
+| Failed | N |
+| Blocked | N |
+| Pass rate | NN% |
+| Critical issues | N |
+| Major issues | N |
+| Minor issues | N |
+| Cosmetic issues | N |
+
+One-paragraph narrative summary (3–5 sentences) — what works, what doesn't, the headline finding.
+
+## 4. Verification Scenarios
+For each scenario, repeat this exact block (numbered 4.1, 4.2, …):
+
+### 4.X {Scenario name} — ✅ Passed | ⚠️ Passed with issues | ❌ Failed
+- **User story / acceptance criterion**: {ref to spec section}
+- **Preconditions**: {explicit state — user, data, env}
+
+| # | Action | Expected | Actual | Status |
+|---|---|---|---|---|
+| 1 | … | … | … | ✅ / ❌ |
+
+- **Issues observed**: {bullets referencing §5 entries, or `_None observed._`}
+- **Evidence**: `screenshots/{filename}.png` (one per key state)
+- **Acceptance criteria checklist**:
+  - [ ] criterion 1
+  - [x] criterion 2
+
+## 5. Discrepancies
+Grouped by severity. Use exactly these four buckets in this order. Empty buckets keep their heading and write `_None observed._`.
+
+### 5.1 Critical
+For each finding, exactly:
+- **Spec requirement**: {quote/ref}
+- **Expected**: …
+- **Actual**: …
+- **Evidence**: `screenshots/…`
+- **Root cause hypothesis**: …
+- **User impact**: …
+- **Recommended fix**: …
+- **Workaround**: …
+
+### 5.2 Major
+(same 8-field block)
+
+### 5.3 Minor
+(same 8-field block)
+
+### 5.4 Cosmetic
+(same 8-field block)
+
+## 6. Console & Network Errors
+| Source (file:line) | Message | Frequency | Severity | Impact |
+|---|---|---|---|---|
+
+(If none: write `_None observed._` below the table heading and omit the table body.)
+
+## 7. Spec Alignment
+- **Fully implemented**: bulleted list of spec items
+- **Partially implemented**: bulleted list with what's missing
+- **Not implemented**: bulleted list with reason
+- **Extra (unspecified) behavior**: bulleted list
+
+## 8. Variances from Plan
+What was tested differently than the spec/plan prescribed (skipped scenarios, substituted data, environment workarounds). Write `_None._` if everything ran as planned.
+
+## 9. Evaluation Against Exit Criteria
+Quote each exit criterion from the spec and mark ✅/❌ with one-line evidence.
+
+| Criterion (from spec) | Status | Evidence |
+|---|---|---|
+
+## 10. Recommendations
+- **Must fix before merge**: {refs to §5 entries}
+- **Should fix soon**: {refs}
+- **Nice-to-have**: {refs}
+
+## 11. Artifacts
+- **Screenshots**: `verification/screenshots/` (N files)
+- **Visual-fidelity report**: `verification/visual-fidelity.md` *(only when mockups were present)* — otherwise `_Not generated (no design_context_path)._`
+- **Console log dump**: inline in §6
+
+## 12. Conclusion
+Restate the verdict from §3 in one sentence, then 2–3 sentences of justification, then an explicit next-step recommendation (merge / fix-then-merge / block).
+````
+
+#### Pre-save Validation Checklist
+
+Before writing the report file, walk this checklist and only save once every item passes:
+
+1. ☐ All 12 sections present, in numeric order (1 → 12).
+2. ☐ Every section heading matches the canonical text exactly (including the `N.` prefix).
+3. ☐ Every discrepancy carries all 8 sub-fields (Spec requirement … Workaround). No partial blocks.
+4. ☐ Severity uses only Critical / Major / Minor / Cosmetic.
+5. ☐ Status icons use only ✅ / ⚠️ / ❌.
+6. ☐ Verdict is one of GO / GO WITH CAVEATS / NO-GO (no other wording).
+7. ☐ Empty sections contain the `_None observed._` / `_None._` placeholder — heading not deleted.
+8. ☐ Screenshot paths are relative (`screenshots/foo.png`), never absolute, never prefixed `verification/`.
+9. ☐ Executive Summary arithmetic checks out: `planned ≥ executed`, `executed = passed + failed + blocked`.
+10. ☐ §10 recommendations reference real §5 entries (no dangling refs).
 
 ---
 
@@ -228,6 +318,77 @@ Categorized by severity (Critical/Major/Minor/Cosmetic):
 - Only search within `.playwright-mcp/` and the task's own `verification/screenshots/` directory
 
 **Output**: All referenced screenshots in `verification/screenshots/`, validated
+
+---
+
+### 7. Visual Fidelity Comparison (Conditional)
+
+**Skip this step entirely** when `design_context_path` was not provided.
+
+**Purpose**: Report (not gate) structural drift between the implemented UI and the source mockups.
+
+**Inputs**:
+- `analysis/design-context/INDEX.md` — list of screens/components with stable IDs
+- `analysis/design-context/mockups/` — source mockup files (HTML, screenshots, ASCII)
+- `verification/screenshots/` — screenshots captured during Steps 3-6
+
+**Comparison approach** (LLM-judged structural match — NOT pixel diff):
+
+For each screen ID in INDEX.md:
+1. Read the source mockup (Read tool renders binary screenshots; HTML and ASCII as text)
+2. Find the corresponding captured screenshot (match by screen ID, page name, or step description)
+3. Compare structurally:
+   - **Layout regions**: header/sidebar/main split, column counts, panel placement
+   - **Field order**: form fields, table columns, list items in the same order as the mockup
+   - **Primary actions**: buttons present, labels match, placement matches
+   - **State coverage**: empty/loading/error/success states from the mockup are reachable in the implementation
+   - **Copy text**: headings, labels, button text match (or follow project copy-tone standards if a deviation is justified)
+4. Mark each comparison ✓ (structural match), ⚠ (minor deviation, noted), or ✗ (substantive drift)
+
+**Output**: `verification/visual-fidelity.md` with this structure:
+
+```markdown
+# Visual Fidelity Report
+
+**Mode**: Report-only (does NOT gate completion)
+**Comparison**: LLM-judged structural match (not pixel-perfect)
+**Source**: analysis/design-context/INDEX.md
+**Captured**: verification/screenshots/
+
+## Summary
+- Total screens compared: [N]
+- Match (✓): [count]
+- Minor deviation (⚠): [count]
+- Substantive drift (✗): [count]
+
+## Per-Screen Comparison
+
+### screen:login (✓ Match)
+- Mockup: analysis/design-context/mockups/login.html
+- Screenshot: verification/screenshots/03-login-page.png
+- Layout: 2-column split matches
+- Field order: email → password → submit ✓
+- Primary action: "Sign In" button matches mockup label and placement
+- States covered: default, error (invalid credentials)
+
+### screen:dashboard (⚠ Minor Deviation)
+- Mockup: analysis/design-context/mockups/dashboard.html
+- Screenshot: verification/screenshots/05-dashboard.png
+- Layout: 3-column matches
+- Deviation: icon library differs (implementation uses Heroicons; mockup shows custom icons)
+- Impact: visual texture differs but information hierarchy preserved
+- Recommendation: confirm icon choice with design team
+
+### screen:settings (✗ Substantive Drift)
+- Mockup: analysis/design-context/mockups/settings.html
+- Screenshot: verification/screenshots/08-settings.png
+- Drift: implementation uses tab navigation; mockup specifies accordion
+- Impact: information density and discoverability differ
+- Implementer's justification (from work-log): standards conflict — `frontend/navigation.md` requires tabs for ≤5 sections
+- Recommendation: design + standards owners reconcile
+```
+
+**Critical**: this report does NOT block workflow completion. The development orchestrator surfaces deviations prominently in the verifier summary (per "report-only, surfaced prominently" decision). Users decide whether to act on findings.
 
 ---
 
@@ -368,6 +529,7 @@ Before completing verification, ensure:
 ✓ Recommendations provided
 ✓ Report saved to verification/e2e-verification-report.md
 ✓ Deployment decision made (GO/NO-GO)
+✓ When `design_context_path` was provided: `verification/visual-fidelity.md` written with per-screen comparison (✓/⚠/✗)
 
 ---
 

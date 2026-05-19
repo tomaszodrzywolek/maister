@@ -12,7 +12,7 @@ This skill provides **shared reference documentation** for all orchestrator skil
 
 Reduce duplication across orchestrators by documenting common patterns once:
 
-- **Phase Blocks**: Simple phase structure with inline transitions (`→ Continue`, `→ Pause`, `→ Conditional`)
+- **Phase Blocks**: Simple phase structure with inline transitions (`→ Pause`, `→ AUTO-CONTINUE`) — these are the only two transition types; see `orchestrator-patterns.md` § 2 for semantics
 - **State Management**: `orchestrator-state.yml` schema and operations
 - **Phase Gates**: Pause behavior and user prompts
 - **Initialization**: Task directory setup, metadata, task creation patterns
