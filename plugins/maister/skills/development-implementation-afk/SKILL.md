@@ -126,10 +126,11 @@ The sub-skill reads `orchestrator.mode: afk` from state.
 
 **Auto-fix loop** (when `fixable: true` critical issues remain):
 1. Collect all `fixable: true` critical issues from verifier output
-2. Apply each fix directly using Read/Edit tools — each issue entry includes file, line, and description. Log each fix to `verification_context.fixes_applied`
-3. Set `skip_test_suite: false` (code changed)
-4. Re-invoke Skill tool: `maister:implementation-verifier` — this counts as one iteration toward the 3-iteration budget
-5. Repeat until: no critical issues remain, OR 3 iterations exhausted, OR no `fixable: true` issues appear in a round
+2. Write `implementation/afk-fix-plan-[N].md` (N = current iteration) as a minimal one-group plan — one step per critical issue with the specific file, line, and description as the step content. Pass this path to the executor via context.
+3. Invoke Skill tool: `maister:implementation-plan-executor` — in AFK mode it reads the fix plan path from context and applies each fix without prompting
+4. Log fixes to `verification_context.fixes_applied`; set `skip_test_suite: false` (code changed)
+5. Re-invoke Skill tool: `maister:implementation-verifier` — this counts as one iteration toward the 3-iteration budget
+6. Repeat until: no critical issues remain, OR 3 iterations exhausted, OR no `fixable: true` issues appear in a round
 
 **Exit conditions**:
 - No critical issues remain → log "Phase 11: verification passed"; TaskUpdate phase-11 → completed; AUTO-CONTINUE
