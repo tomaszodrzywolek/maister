@@ -495,6 +495,7 @@ Orchestrators manage complete workflows with state management, auto-recovery, an
 | Skill | Purpose | Details |
 |-------|---------|---------|
 | `development` | **Unified workflow** (14 phases: 1-14) for all development tasks. Phases activate based on detected task characteristics (not predetermined types). TDD gates activate when defects detected, UI mockups when UI-heavy. | `skills/development/SKILL.md` |
+| `development-implementation-afk` | **AFK execution** (phases 8-14) for a prepared development task. Runs autonomously for a remote Software Development Agent — zero user prompts, writes `afk-result.yml` on completion or block. | `skills/development-implementation-afk/SKILL.md` |
 | `performance` | Static code analysis for bottleneck detection, reuses standard spec/plan/implement/verify pipeline | `skills/performance/SKILL.md` |
 | `migration` | Code/data/architecture migrations with rollback plans | `skills/migration/SKILL.md` |
 | `research` | Multi-source research with synthesis, solution brainstorming, high-level design, and citations | `skills/research/SKILL.md` |

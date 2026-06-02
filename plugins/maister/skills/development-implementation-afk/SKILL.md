@@ -126,9 +126,9 @@ The sub-skill reads `orchestrator.mode: afk` from state.
 
 **Auto-fix loop** (when `fixable: true` critical issues remain):
 1. Collect all `fixable: true` critical issues from verifier output
-2. Invoke Skill tool: `maister:implementation-plan-executor` with fix-only instruction listing the specific issues (file, line, description)
+2. Apply each fix directly using Read/Edit tools — each issue entry includes file, line, and description. Log each fix to `verification_context.fixes_applied`
 3. Set `skip_test_suite: false` (code changed)
-4. Re-invoke `maister:implementation-verifier` — this counts as one iteration toward the 3-iteration budget
+4. Re-invoke Skill tool: `maister:implementation-verifier` — this counts as one iteration toward the 3-iteration budget
 5. Repeat until: no critical issues remain, OR 3 iterations exhausted, OR no `fixable: true` issues appear in a round
 
 **Exit conditions**:
@@ -168,16 +168,17 @@ Log result to work-log. TaskUpdate phase-13 → completed. AUTO-CONTINUE.
 
 TaskUpdate phase-14 → in_progress.
 
-1. Write `task.status: completed` to `orchestrator-state.yml`
-2. Gather for afk-result.yml:
+1. Remove `.maister/.afk-active` sentinel (per Sentinel Management) — done first so removal is guaranteed even if later steps fail
+2. Clear `orchestrator.mode` in `orchestrator-state.yml` (set to null) — prevents interactive re-entry from firing AFK branches
+3. Write `task.status: completed` to `orchestrator-state.yml`
+4. Gather for afk-result.yml:
    - `completed_groups`: from Phase 8 implementation summary (task-group-implementer results)
    - `blocked_groups`: [] (completed path)
    - `files_changed`: union of all files reported changed across completed task groups
    - `next_steps`: "Review implementation, run `make build && make validate`, create PR"
-3. Write `verification/afk-result.yml` (see schema below)
-4. Remove `.maister/.afk-active` sentinel (per Sentinel Management)
-5. TaskUpdate phase-14 → completed
-6. Output: `AFK run complete. Status: completed. See verification/afk-result.yml.`
+5. Write `verification/afk-result.yml` (see schema below)
+6. TaskUpdate phase-14 → completed
+7. Output: `AFK run complete. Status: completed. See verification/afk-result.yml.`
 
 ---
 
@@ -185,15 +186,16 @@ TaskUpdate phase-14 → in_progress.
 
 Called from Phase 8, 9, or 11.
 
-1. Write `task.status: blocked` to `orchestrator-state.yml`
-2. Collect fields based on caller:
+1. Remove `.maister/.afk-active` sentinel (per Sentinel Management) — done first so removal is guaranteed even if later steps fail
+2. Clear `orchestrator.mode` in `orchestrator-state.yml` (set to null) — prevents interactive re-entry from firing AFK branches
+3. Write `task.status: blocked` to `orchestrator-state.yml`
+4. Collect fields based on caller:
    - **Phase 8**: `completed_groups` (groups that finished), `blocked_groups` (groups that exhausted retries with last failure reason); `files_changed`: union from completed groups only
    - **Phase 9**: failure info from TDD gate; `files_changed`: from Phase 8 completed groups
    - **Phase 11**: `unresolved_critical_issues` (all critical issues with `fixable` field); `files_changed`: union from Phase 8 groups + any Phase 11 auto-fix changes
-3. `next_steps`: "Resolve the issues listed in afk-result.yml, then re-invoke `maister:development-implementation-afk` or continue interactively with `maister:development`"
-4. Write `verification/afk-result.yml` (see schema below)
-5. Remove `.maister/.afk-active` sentinel (per Sentinel Management)
-6. Output: `AFK run BLOCKED at Phase [N]: [reason]. See verification/afk-result.yml for details.`
+5. `next_steps`: "Resolve the issues listed in afk-result.yml, then re-invoke `maister:development-implementation-afk` or continue interactively with `maister:development`"
+6. Write `verification/afk-result.yml` (see schema below)
+7. Output: `AFK run BLOCKED at Phase [N]: [reason]. See verification/afk-result.yml for details.`
 
 ---
 
