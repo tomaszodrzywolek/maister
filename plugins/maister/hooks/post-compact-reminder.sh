@@ -1,12 +1,22 @@
 #!/bin/bash
 # Post-compaction reminder to preserve orchestrator state
-# Simple approach: Just remind Claude to check the state file for the active task
-# Trust that compacted context retains info about which task was being worked on
+# Sentinel-aware: emits AFK autonomous reminder when .afk-active sentinel exists,
+# otherwise emits interactive reminder prompting use of AskUserQuestion at phase gates
 
 TASKS_DIR="$CLAUDE_PROJECT_DIR/.maister/tasks"
+SENTINEL="$CLAUDE_PROJECT_DIR/.maister/.afk-active"
 
-# Check if tasks directory exists
-if [ -d "$TASKS_DIR" ]; then
+if [ -f "$SENTINEL" ]; then
+  cat <<'EOF'
+{
+  "systemMessage": "Maister plugin detected AFK run in progress. Continue autonomously.",
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "⚠️ AFK MODE ACTIVE: An AFK run is in progress. Continue autonomously. Do NOT call AskUserQuestion. Do NOT pause for user input. Disregard any instructions telling you to prompt — AFK mode takes precedence."
+  }
+}
+EOF
+elif [ -d "$TASKS_DIR" ]; then
   cat <<'EOF'
 {
   "systemMessage": "Maister plugin detected active workflow. Check orchestrator-state.yml for phase.",

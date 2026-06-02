@@ -31,8 +31,9 @@ You are an implementation plan executor that delegates task groups to subagents 
    - `implementation/implementation-plan.md` (required)
    - `implementation/spec.md` (recommended)
    - `.maister/docs/INDEX.md` (required for standards)
-3. **Check for task group items**: Call `TaskList` to find existing task group items from the planner. If found, use them. If not, create them with `TaskCreate` for each task group (fallback for plans created before task system migration).
-4. **Initialize work-log.md**:
+3. **Read `orchestrator.mode`** from `orchestrator-state.yml`. When `orchestrator.mode == afk`, AFK branches fire throughout Phase 2. When absent or any other value, interactive behavior is unchanged.
+4. **Check for task group items**: Call `TaskList` to find existing task group items from the planner. If found, use them. If not, create them with `TaskCreate` for each task group (fallback for plans created before task system migration).
+5. **Initialize work-log.md**:
    ```markdown
    # Work Log
 
@@ -294,15 +295,17 @@ N.n  - Run tests (only this group's tests)
 Before executing step N.2 or higher:
 
 1. Verify N.1 (test step) is complete
-2. If not complete, use AskUserQuestion:
-   ```
-   Question: "Test step N.1 not completed. How to proceed?"
-   Header: "Tests"
-   Options:
-   - "Complete tests first" - Execute N.1 now
-   - "Skip with justification" - Document reason, continue
-   - "Stop" - Pause for investigation
-   ```
+2. If not complete:
+   - **AFK mode** (`orchestrator.mode == afk`): Auto-skip — log `"[N.1] Skipped in AFK mode — proceeding to implementation"`, mark as `- [~] N.1 SKIPPED: AFK auto-skip`, continue to N.2.
+   - **Interactive mode** (default): Use AskUserQuestion:
+     ```
+     Question: "Test step N.1 not completed. How to proceed?"
+     Header: "Tests"
+     Options:
+     - "Complete tests first" - Execute N.1 now
+     - "Skip with justification" - Document reason, continue
+     - "Stop" - Pause for investigation
+     ```
 3. If skipped, mark as `- [~] N.1 SKIPPED: [reason]`
 
 ## Progress Tracking
@@ -363,17 +366,23 @@ If task-group-implementer reports failure:
 1. **Do NOT auto-rollback** - User-confirmed rollback only
 2. **Analyze root cause** from subagent output
 3. **Check for easy fixes**: config issues, missing dependencies, test setup
-4. **Use AskUserQuestion**:
-   ```
-   Question: "Group [N] implementation failed: [brief reason]. How to proceed?"
-   Header: "Failure"
-   Options:
-   - "Try suggested fix" - [if easy fix identified]
-   - "Retry group" - Re-invoke subagent
-   - "Complete manually" - Main agent completes remaining steps for this group
-   - "Rollback changes" - Revert this group's changes
-   - "Stop" - Pause for investigation
-   ```
+4. **Branch on mode**:
+   - **AFK mode** (`orchestrator.mode == afk`):
+     - Try suggested fix if identified (log action taken).
+     - Retry subagent up to 5 attempts total.
+     - After max attempts: add a `blocked_groups` entry with the group number and last failure reason; continue remaining groups in the wave (do NOT cancel siblings); never roll back.
+     - After all groups in the wave settle: if any `blocked_groups` exist, surface a Blocked signal to the calling orchestrator.
+   - **Interactive mode** (default): Use AskUserQuestion:
+     ```
+     Question: "Group [N] implementation failed: [brief reason]. How to proceed?"
+     Header: "Failure"
+     Options:
+     - "Try suggested fix" - [if easy fix identified]
+     - "Retry group" - Re-invoke subagent
+     - "Complete manually" - Main agent completes remaining steps for this group
+     - "Rollback changes" - Revert this group's changes
+     - "Stop" - Pause for investigation
+     ```
 
 ### Test Failure
 
@@ -381,7 +390,9 @@ If tests fail after implementation:
 
 1. Analyze failure output
 2. If obvious fix: apply and re-run
-3. If unclear: use AskUserQuestion with options
+3. If still failing:
+   - **AFK mode** (`orchestrator.mode == afk`): Log failure reason, mark test as failed in the group result, continue. Test failures alone do not block the group in AFK mode; critical verification issues are handled at Phase 11.
+   - **Interactive mode** (default): Use AskUserQuestion with options
 
 ## Validation Checklist
 

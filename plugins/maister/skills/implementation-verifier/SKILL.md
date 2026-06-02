@@ -92,6 +92,7 @@ If prerequisites missing, report and stop.
    - If orchestrator mode AND option is `true`: Include in verification (mandatory)
    - If orchestrator mode AND option is `false`: Skip (mark task as completed with `metadata: {skipped: true}`)
    - If orchestrator mode AND option is `null`: Warn and prompt user
+     - Exception: mode == afk: Treat as false (skip). Log "Option [name] was null; defaulted to false in AFK mode."
    - If standalone mode: Prompt user with AskUserQuestion
 
 ### Step 2: Set all tasks to in_progress
