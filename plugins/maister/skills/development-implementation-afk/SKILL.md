@@ -32,7 +32,7 @@ Check each condition against on-disk artifacts (NOT `completed_phases` list). Al
 | 5 | `task_context.task_characteristics` populated in state | "task_characteristics not found in orchestrator-state.yml. Phase 2 must complete first." |
 | 6 | If `has_reproducible_defect`: `implementation/tdd-red-gate.md` exists | "Missing implementation/tdd-red-gate.md for defect task. Phase 3 must complete first." |
 
-On any failure: output the specific reason, set `task.status: precondition_failed`, write minimal `verification/afk-result.yml` (status: blocked, blocked_at_phase: null, reason: [specific message]), and stop. No work started. Remove sentinel before outputting (see Sentinel Management).
+On any failure: output the specific reason, set `task.status: precondition_failed`, write minimal `verification/afk-result.yml` (status: blocked, blocked_at_phase: null, reason: [specific message]), and stop. No work started. Run **Exit Cleanup** before outputting.
 
 ---
 
@@ -45,11 +45,18 @@ Path: `$CLAUDE_PROJECT_DIR/.maister/.afk-active` (plain-text file containing the
 - Sentinel exists with the **same** path: resume after compaction; proceed normally.
 - No sentinel: write it now.
 
-**On all exit paths** (completed, blocked, precondition-failed, any hard error):
-- Remove the sentinel before outputting the final status line.
-- If removal fails, log the failure but do not re-raise it.
-
 The sentinel's only purpose is to influence `post-compact-reminder.sh`. Its absence must never cause a phase to fail.
+
+---
+
+## Exit Cleanup
+
+A single routine shared by **every** exit path — Phase 14 (completed), Blocked Finalize, and precondition failure. Run it before outputting the final status line. Both steps are unconditional and idempotent:
+
+1. **Remove the sentinel** (`$CLAUDE_PROJECT_DIR/.maister/.afk-active`). Unconditional — a sentinel present at an exit path is either this run's or a prior dead run's (concurrent AFK runs per repo are unsupported; the startup rule already treats a non-matching sentinel as stale). If removal fails, log it but do not re-raise.
+2. **Clear `orchestrator.mode`** in `orchestrator-state.yml` (set to `null`). Unconditional — a no-op when already null (fresh-run precondition failure), and the needed fix when `mode: afk` survived from a prior invocation (resume-after-compaction). Prevents interactive re-entry (`/maister:development`) from silently firing AFK branches in the sub-skills.
+
+Removing the sentinel first guarantees the only project-global leftover is cleared even if a later step fails. Each exit path runs Exit Cleanup, then writes its own `task.status` and `afk-result.yml` — the only things that legitimately differ between paths.
 
 ---
 
@@ -172,17 +179,16 @@ Log result to work-log. TaskUpdate phase-13 → completed. AUTO-CONTINUE.
 
 TaskUpdate phase-14 → in_progress.
 
-1. Remove `.maister/.afk-active` sentinel (per Sentinel Management) — done first so removal is guaranteed even if later steps fail
-2. Clear `orchestrator.mode` in `orchestrator-state.yml` (set to null) — prevents interactive re-entry from firing AFK branches
-3. Write `task.status: completed` to `orchestrator-state.yml`
-4. Gather for afk-result.yml:
+1. Run **Exit Cleanup** (remove sentinel → clear `orchestrator.mode`)
+2. Write `task.status: completed` to `orchestrator-state.yml`
+3. Gather for afk-result.yml:
    - `completed_groups`: from Phase 8 implementation summary (task-group-implementer results)
    - `blocked_groups`: [] (completed path)
    - `files_changed`: union of all files reported changed across completed task groups
    - `next_steps`: "Review implementation, run `make build && make validate`, create PR"
-5. Write `verification/afk-result.yml` (see schema below)
-6. TaskUpdate phase-14 → completed
-7. Output: `AFK run complete. Status: completed. See verification/afk-result.yml.`
+4. Write `verification/afk-result.yml` (see schema below)
+5. TaskUpdate phase-14 → completed
+6. Output: `AFK run complete. Status: completed. See verification/afk-result.yml.`
 
 ---
 
@@ -190,16 +196,15 @@ TaskUpdate phase-14 → in_progress.
 
 Called from Phase 8, 9, or 11.
 
-1. Remove `.maister/.afk-active` sentinel (per Sentinel Management) — done first so removal is guaranteed even if later steps fail
-2. Clear `orchestrator.mode` in `orchestrator-state.yml` (set to null) — prevents interactive re-entry from firing AFK branches
-3. Write `task.status: blocked` to `orchestrator-state.yml`
-4. Collect fields based on caller:
+1. Run **Exit Cleanup** (remove sentinel → clear `orchestrator.mode`)
+2. Write `task.status: blocked` to `orchestrator-state.yml`
+3. Collect fields based on caller:
    - **Phase 8**: `completed_groups` (groups that finished), `blocked_groups` (groups that exhausted retries with last failure reason); `files_changed`: union from completed groups only
    - **Phase 9**: failure info from TDD gate; `files_changed`: from Phase 8 completed groups
    - **Phase 11**: `unresolved_critical_issues` (all critical issues with `fixable` field); `files_changed`: union from Phase 8 groups + any Phase 11 auto-fix changes
-5. `next_steps`: "Resolve the issues listed in afk-result.yml, then re-invoke `maister:development-implementation-afk` or continue interactively with `maister:development`"
-6. Write `verification/afk-result.yml` (see schema below)
-7. Output: `AFK run BLOCKED at Phase [N]: [reason]. See verification/afk-result.yml for details.`
+4. `next_steps`: "Resolve the issues listed in afk-result.yml, then re-invoke `maister:development-implementation-afk` or continue interactively with `maister:development`"
+5. Write `verification/afk-result.yml` (see schema below)
+6. Output: `AFK run BLOCKED at Phase [N]: [reason]. See verification/afk-result.yml for details.`
 
 ---
 
