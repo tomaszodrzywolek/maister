@@ -2,6 +2,28 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Coding Standards & Conventions
+
+Read @.maister/docs/INDEX.md before starting any task. It indexes the project's coding standards and conventions:
+- Project documentation: vision, roadmap, tech stack, and architecture
+- Coding standards organized by domain (global, testing, plugin, orchestrator, workflow, documentation, terminology, git)
+
+Follow standards in `.maister/docs/standards/` when writing code — they represent team decisions. If standards conflict with the task, ask the user.
+
+### Standards Evolution
+
+When you notice recurring patterns, fixes, or conventions during implementation that aren't yet captured in standards — suggest adding them. Examples:
+- A bug fix reveals a pattern that should be standardized (e.g., "always validate X before Y")
+- PR review feedback identifies a convention the team wants enforced
+- The same type of fix is needed across multiple files
+- A new library/pattern is adopted that should be documented
+
+When this happens, briefly suggest the standard to the user. If approved, invoke `/maister:standards-update` with the identified pattern.
+
+## Maister Workflows
+
+This project uses the maister plugin for structured development workflows. When any `/maister:*` command is invoked, execute it via the Skill tool immediately — do not skip workflows for "straightforward" tasks. The user chose the workflow intentionally; complexity assessment is the workflow's job.
+
 ## Repository Overview
 
 This is a Claude Code plugin marketplace repository containing bundled plugins for AI-driven SDLC workflows. The main plugin is `maister` which provides structured development workflows.
@@ -97,3 +119,17 @@ These three files need version/name changes during the merge workflow:
 2. Run `/maister:init` to initialize the framework
 3. Test commands like `/maister:development "test feature"`
 4. Test workflows with different task types and complexity levels
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked manually — no automated issue tracker is configured. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Default canonical label strings (needs-triage, needs-info, ready-for-agent, ready-for-human, wontfix). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context repo — one `CONTEXT.md` + `docs/adr/` at the root. See `docs/agents/domain.md`.

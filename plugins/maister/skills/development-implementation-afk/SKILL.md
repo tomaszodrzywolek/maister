@@ -125,12 +125,15 @@ The sub-skill reads `orchestrator.mode: afk` from state.
 - `severity: critical` AND `fixable: false` → log to `verification_context.issues_found` as unresolvable
 
 **Auto-fix loop** (when `fixable: true` critical issues remain):
-1. Collect all `fixable: true` critical issues from verifier output
-2. Write `implementation/afk-fix-plan-[N].md` (N = current iteration) as a minimal one-group plan — one step per critical issue with the specific file, line, and description as the step content. Pass this path to the executor via context.
-3. Invoke Skill tool: `maister:implementation-plan-executor` — in AFK mode it reads the fix plan path from context and applies each fix without prompting
-4. Log fixes to `verification_context.fixes_applied`; set `skip_test_suite: false` (code changed)
-5. Re-invoke Skill tool: `maister:implementation-verifier` — this counts as one iteration toward the 3-iteration budget
-6. Repeat until: no critical issues remain, OR 3 iterations exhausted, OR no `fixable: true` issues appear in a round
+1. Collect all `fixable: true` critical issues from verifier output (each has `description`, `location`, `suggestion`)
+2. Invoke Task tool: `maister:task-group-implementer` with all collected issues batched as a **single group** — the orchestrator writes no code itself; the implementer is the sole code-writer. Frame the work as remediation of verification findings and structure the steps to fit the implementer's test-driven contract:
+   - **N.1** = reproduce all findings (run the failing check/lint/typecheck/build/test → confirm red); when a finding has no runnable check, degrade to "locate and confirm the issue at its `location`"
+   - **N.2…N.k** = apply one fix per issue, using the verifier's `description` / `location` / `suggestion` as the step content
+   - **N.last** = re-run all checks → confirm green
+   Explicitly instruct the implementer: these are remediation fixes for verification findings — do NOT author new feature tests.
+3. Process the implementer's report; log fixes to `verification_context.fixes_applied`; set `skip_test_suite: false` (code changed). A PARTIAL/FAILED report needs no special handling — the re-verification below re-detects whatever remains critical.
+4. Re-invoke Skill tool: `maister:implementation-verifier` — this counts as one iteration toward the 3-iteration budget
+5. Repeat until: no critical issues remain, OR 3 iterations exhausted, OR no `fixable: true` issues appear in a round
 
 **Exit conditions**:
 - No critical issues remain → log "Phase 11: verification passed"; TaskUpdate phase-11 → completed; AUTO-CONTINUE

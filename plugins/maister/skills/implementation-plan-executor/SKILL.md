@@ -27,12 +27,11 @@ You are an implementation plan executor that delegates task groups to subagents 
 ## Phase 1: Initialize
 
 1. **Locate task**: Get path from context or user
-2. **Determine plan file**: When `orchestrator.mode == afk` AND context includes a `fix_plan_path`, use that path as the plan file. Otherwise use `implementation/implementation-plan.md`.
-3. **Validate files exist**:
-   - plan file (as determined above, required)
+2. **Validate files exist**:
+   - `implementation/implementation-plan.md` (required)
    - `implementation/spec.md` (recommended)
    - `.maister/docs/INDEX.md` (required for standards)
-4. **Read `orchestrator.mode`** from `orchestrator-state.yml`. When `orchestrator.mode == afk`, AFK branches fire throughout Phase 2. When absent or any other value, interactive behavior is unchanged.
+3. **Read `orchestrator.mode`** from `orchestrator-state.yml`. When `orchestrator.mode == afk`, AFK branches fire throughout Phase 2. When absent or any other value, interactive behavior is unchanged.
 4. **Check for task group items**: Call `TaskList` to find existing task group items from the planner. If found, use them. If not, create them with `TaskCreate` for each task group (fallback for plans created before task system migration).
 5. **Initialize work-log.md**:
    ```markdown
