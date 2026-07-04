@@ -1,4 +1,4 @@
-name: Build Copilot CLI Variant
+name: Build Platform Variants
 on:
   push:
     branches: [master, v2]
@@ -10,16 +10,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Copilot CLI variant
+      - name: Build platform variants
         run: make build
 
-      - name: Validate build
+      - name: Validate builds
         run: make validate
 
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add plugins/maister-copilot/
-          git diff --cached --quiet || git commit -m "Rebuild Copilot CLI variant"
+          git add plugins/maister-copilot/ plugins/maister-pi/
+          git diff --cached --quiet || git commit -m "Rebuild platform variants"
           git push
