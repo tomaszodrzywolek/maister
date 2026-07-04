@@ -43,7 +43,7 @@ Full framework rule: `../orchestrator-framework/references/orchestrator-patterns
 ### Step 3: Initialize Workflow
 
 1. **Capture the clock**: run `date -u +"%Y-%m-%dT%H:%M:%SZ"` via Bash NOW — you do NOT know the time from context. Every timestamp written this turn (`created`, `updated`, `generated`, `phases[].started`) uses this value. Date-only or `T00:00:00Z` values are the documented failure mode (orchestrator-patterns.md § 4 Timestamp Rule). Re-run `date` in later turns before writing timestamps.
-2. **Create Task Items**: Use `todo({ action: "create", ... })` for all phases (see Phase Configuration), then set dependencies with `todo({ action: "update", ... }) addBlockedBy`
+2. **Create Task Items**: Use `todo({ action: "create", subject: "...", status: "pending" })` for all phases (see Phase Configuration), then set dependencies with `todo({ action: "update", id: <id>, addBlockedBy: [<dependency-id>] })`
 3. **Create Task Directory**: `.maister/tasks/product-design/YYYY-MM-DD-task-name/`
    - Create `context/` folder with `README.md` instructing users to drop relevant files there (meeting transcripts, existing designs, spreadsheets, docs, PDFs, images)
    - Create `analysis/` and `outputs/` directories
@@ -239,7 +239,7 @@ ask_user_question — "I detected these design characteristics. Please confirm o
 
 ### Phase 1: Context Synthesis
 
-> **Phase gate**: Confirm Phase 0 completion in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase gate**: Confirm Phase 0 completion in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Synthesize ALL context sources into a unified design context document that informs all downstream phases
 **Execute**: Skill/Agent + Direct (adapts based on characteristics)
@@ -296,7 +296,7 @@ ask_user_question — "I detected these design characteristics. Please confirm o
 
 ### Phase 2: Problem Exploration
 
-> **Phase gate**: Confirm Phase 1 completion in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase gate**: Confirm Phase 1 completion in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Explore the problem space through structured questioning to produce a refined problem statement, constraints, and success criteria
 **Execute**: Direct, inline, interactive
@@ -348,7 +348,7 @@ ask_user_question — "Problem space explored." Read `next_phase` from `orchestr
 
 ### Phase 3: User & Persona Exploration
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 2 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 2 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Develop persona cards and user journeys for the design
 **Execute**: Direct, inline, interactive
@@ -392,7 +392,7 @@ ask_user_question — "Personas defined. Continue to Idea Generation?"
 
 ### Phase 4: Idea Generation
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase (Phase 3 if ran, or Phase 2) in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase (Phase 3 if ran, or Phase 2) in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Generate unbiased design alternatives using the solution-brainstormer agent
 **Execute**: Agent via subagent tool (deliberately non-interactive to avoid anchoring bias)
@@ -484,7 +484,7 @@ ask_user_question — "Design direction approved. Continue to Feature Specificat
 
 ### Phase 6: Feature Specification
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 5 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 5 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Build a complete feature specification section-by-section using propose-and-refine
 **Execute**: Direct, inline, interactive
@@ -557,7 +557,7 @@ ask_user_question — "Specification complete." Read `next_phase` from `orchestr
 
 ### Phase 7: Visual Prototyping
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 6 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 6 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Generate visual mockups (HTML/CSS via visual companion or ASCII fallback) for UI-focused designs
 **Execute**: Visual companion + Direct, with ui-mockup-generator fallback
@@ -650,7 +650,7 @@ ask_user_question — "Visual prototyping complete. Continue to Review & Handoff
 
 ### Phase 8: Review & Handoff
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Assemble the layered product brief, present for final approval, suggest development handoff
 **Execute**: Direct, inline, interactive

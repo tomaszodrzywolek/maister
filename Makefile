@@ -33,8 +33,13 @@ validate-pi:
 	@! grep -r 'subagent_type' plugins/maister-pi/agents plugins/maister-pi/skills plugins/maister-pi/prompts --include="*.md" 2>/dev/null || (echo "FAIL: subagent_type reference found" && exit 1)
 	@echo "Checking no AskUserQuestion references..."
 	@! grep -r 'AskUserQuestion' plugins/maister-pi/agents plugins/maister-pi/skills plugins/maister-pi/prompts --include="*.md" 2>/dev/null || (echo "FAIL: AskUserQuestion reference found" && exit 1)
-	@echo "Checking no TaskCreate/TaskUpdate references..."
-	@! grep -rE 'TaskCreate|TaskUpdate' plugins/maister-pi/agents plugins/maister-pi/skills plugins/maister-pi/prompts --include="*.md" 2>/dev/null || (echo "FAIL: TaskCreate/TaskUpdate reference found" && exit 1)
+	@echo "Checking no TaskCreate/TaskUpdate/TaskList references..."
+	@! grep -rE 'TaskCreate|TaskUpdate|TaskList' plugins/maister-pi/agents plugins/maister-pi/skills plugins/maister-pi/prompts --include="*.md" 2>/dev/null || (echo "FAIL: TaskCreate/TaskUpdate/TaskList reference found" && exit 1)
+	@echo "Checking no placeholder todo calls or unsupported ask_user_question shapes..."
+	@! grep -rE 'todo\(\{ action: "(create|update)", \.\.\. \}\)|max 5 critical clarifying questions|all 5 options' plugins/maister-pi/agents plugins/maister-pi/skills plugins/maister-pi/prompts --include="*.md" 2>/dev/null || (echo "FAIL: placeholder todo call or unsupported ask_user_question shape found" && exit 1)
+	@echo "Checking no Claude-specific docs-manager template filename..."
+	@! find plugins/maister-pi/skills/maister-docs-manager -name 'claude-md-template.md' | grep -q . || (echo "FAIL: claude-md-template.md still present" && exit 1)
+	@! grep -r 'claude-md-template\.md' plugins/maister-pi/skills/maister-docs-manager --include="*.md" 2>/dev/null || (echo "FAIL: claude-md-template.md reference found" && exit 1)
 	@echo "Checking no maister: (colon form) references..."
 	@! grep -r 'maister:' plugins/maister-pi/agents plugins/maister-pi/skills plugins/maister-pi/prompts --include="*.md" 2>/dev/null || (echo "FAIL: maister: (colon form) reference found" && exit 1)
 	@echo "Checking no CLAUDE.md references..."

@@ -31,7 +31,7 @@ You are an implementation plan executor that delegates task groups to subagents 
    - `implementation/implementation-plan.md` (required)
    - `implementation/spec.md` (recommended)
    - `.maister/docs/INDEX.md` (required for standards)
-3. **Check for task group items**: Call `TaskList` to find existing task group items from the planner. If found, use them. If not, create them with `todo({ action: "create", ... })` for each task group (fallback for plans created before task system migration).
+3. **Check for task group items**: Call `todo({ action: "list" })` to find existing task group items from the planner. If found, use them. If not, create them with `todo({ action: "create", subject: "...", status: "pending" })` for each task group (fallback for plans created before task system migration).
 4. **Initialize work-log.md**:
    ```markdown
    # Work Log
@@ -75,7 +75,7 @@ Never assume missing `Files to Modify` means "None" — silent disjoint assumpti
 
 For each wave:
 
-0. For every group in the wave, `todo({ action: "update", ... })` to `status: "in_progress"` with `owner: "maister-task-group-implementer"`.
+0. For every group in the wave, `todo({ action: "update", id: <id>, status: "..." })` to `status: "in_progress"` with `owner: "maister-task-group-implementer"`.
 
 1. **Prepare group context** (per group):
    - Extract group content from `implementation-plan.md` (including `Visual References` section, if present)
@@ -110,7 +110,7 @@ For each wave:
      (Linux: `sed -i` without `''`. The leading quote in `data-step="N\.` anchors the exact group — group 1 cannot match 11.) Then VERIFY: `grep -c 'data-group="N" class="group done"'` must return 1; if 0, append a warning to `work-log.md` (`HTML plan sync missed markers for Group N`) — a visible miss, never a silent one. File absent → skip silently; sync never blocks the wave.
    - Add a group entry to `work-log.md` with standards trail.
    - Verify test results are acceptable.
-   - `todo({ action: "update", ... })` to `status: "completed"` with `metadata: {completed_at, tests_passed, files_modified, standards_applied, wave: N}`.
+   - `todo({ action: "update", id: <id>, status: "..." })` to `status: "completed"` with `metadata: {completed_at, tests_passed, files_modified, standards_applied, wave: N}`.
 
 4. **Partial-wave failure handling**:
    - Do NOT cancel sibling subagents in the same wave — they may produce valid work even when one peer fails.
@@ -347,7 +347,7 @@ After each task group:
    - No `- [ ]` checkboxes remain
    - All groups have work-log entries
    - Standards Reading Log is complete
-   - All group tasks are `completed` via `TaskList` (cross-validate against markdown checkboxes)
+   - All group tasks are `completed` via `todo({ action: "list" })` (cross-validate against markdown checkboxes)
 
 2. **Run full project test suite** (all tests, not just feature tests — catches regressions in unrelated areas)
 

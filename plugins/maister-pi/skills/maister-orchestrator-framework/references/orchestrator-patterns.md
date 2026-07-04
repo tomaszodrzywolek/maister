@@ -61,7 +61,7 @@ For all analysis, planning, implementation, and verification phases: **ALWAYS DE
 
 All orchestrators pause at `→ Pause` transitions for user review and prompt for optional phases.
 
-**State ordering rule**: Phase state MUST NOT be updated to 'completed' (via orchestrator-state.yml or todo({ action: "update", ... })) until AFTER the user responds to the exit gate. Correct sequence: finish phase work → call ask_user_question → receive user response → update state to completed.
+**State ordering rule**: Phase state MUST NOT be updated to 'completed' (via orchestrator-state.yml or todo({ action: "update", id: <id>, status: "..." })) until AFTER the user responds to the exit gate. Correct sequence: finish phase work → call ask_user_question → receive user response → update state to completed.
 
 ### Phase Gates Override Permission Modes
 
@@ -110,7 +110,7 @@ When a phase ends with `→ **AUTO-CONTINUE**`:
 | Saying "I'll pause here" without tool call | Words are not pauses. Tool invocation required. |
 | Auto-accepting subagent decisions without asking | User must consent to scope/approach decisions |
 | Outputting a summary after phase work, then ending turn before reaching `→ Pause` | Gate is skipped; user loses control at the most critical review point. The gate must be the FIRST action after phase work completes — no summaries, no output before it. |
-| Marking phase as completed (state/todo({ action: "update", ... })) before the exit gate executes | State corruption — downstream phases see false "completed" status. Gate → user response → state update. Never reverse this order. |
+| Marking phase as completed (state/todo({ action: "update", id: <id>, status: "..." })) before the exit gate executes | State corruption — downstream phases see false "completed" status. Gate → user response → state update. Never reverse this order. |
 | "Auto mode / acceptEdits / bypassPermissions is on, so I'll skip the gate to minimize questions" | The orchestrator's phase gates are an explicit stated boundary that overrides auto mode's "minimize clarifying questions" instruction. Gates fire in every permission mode. See § 2 "Phase Gates Override Permission Modes". |
 | "The subagent works autonomously, so the orchestrator should too" | Subagents have no user channel; the orchestrator IS the user channel. Conflating the two removes all user visibility. |
 | Treating an empty `decisions_needed` as license to skip the phase exit gate | The DECISION GATE (mandatory-when-decisions-exist) and the phase exit `→ Pause` (mandatory-always) are separate. Empty `decisions_needed` only skips the former. |
@@ -239,7 +239,7 @@ orchestrator:
   updated: [ISO 8601 timestamp]
   task_path: .maister/tasks/[type]/YYYY-MM-DD-task-name
 
-  # Task tracking IDs (maps phase names to todo({ action: "create", ... }) IDs)
+  # Task tracking IDs (maps phase names to todo({ action: "create", subject: "...", status: "pending" }) IDs)
   task_ids:
     phase-1: null
     phase-2: null
@@ -330,7 +330,7 @@ phase_summaries:
 5. **Create task directory**: Standard structure with analysis/, implementation/, verification/, documentation/ *(skip on resume)*
 6. **Create state file**: `orchestrator-state.yml` *(skip on resume)*
 7. **Set up operator dashboard** (§ 8) — *skip this entire step when `options.html_output` is false*: copy `../assets/dashboard.html` (sibling `assets/` directory of this references/ file) to the task root as `dashboard.html`, write the initial `dashboard-data.js`, then **auto-open it in the user's browser** with the platform opener — `open "[abs-task-path]/dashboard.html"` (macOS), `xdg-open` (Linux), `start ""` (Windows). Pass the **plain absolute filesystem path — NEVER construct a `file://` URL** (hand-built URLs get mangled, e.g. `file///` missing the colon; the opener resolves plain paths itself). If the command fails, just print the path hint — never block initialization. On resume: re-copy `dashboard.html` only if missing; regenerate `dashboard-data.js` from state; then auto-open it in the browser again (same opener as a new task — if the tab is already open the OS focuses it rather than duplicating).
-8. **Create task items**: `todo({ action: "create", ... })` for all phases, then `todo({ action: "update", ... }) addBlockedBy` for dependencies. On resume, also restore completed phase statuses.
+8. **Create task items**: `todo({ action: "create", subject: "...", status: "pending" })` for all phases, then `todo({ action: "update", id: <id>, addBlockedBy: [<dependency-id>] })` for dependencies. On resume, also restore completed phase statuses.
 9. **Output summary**: Show task info, phases, starting message — include the dashboard path hint `Dashboard: open [task-path]/dashboard.html in a browser to monitor progress` *only when `options.html_output` is true*.
 
 ### Task Name Generation
@@ -345,9 +345,9 @@ Examples: "Fix login timeout bug" → `2025-12-17-fix-login-timeout`
 
 Task system IDs are ephemeral to a session. On resume:
 
-1. Create all phase tasks (same `todo({ action: "create", ... })` loop, all start pending)
-2. Set dependencies (same `todo({ action: "update", ... }) addBlockedBy`)
-3. Mark completed phases (`todo({ action: "update", ... })` to `completed` with `metadata: {restored: true}`)
+1. Create all phase tasks (same `todo({ action: "create", subject: "...", status: "pending" })` loop, all start pending)
+2. Set dependencies (same `todo({ action: "update", id: <id>, addBlockedBy: [<dependency-id>] })`)
+3. Mark completed phases (`todo({ action: "update", id: <id>, status: "..." })` to `completed` with `metadata: {restored: true}`)
 4. Update state with new task IDs
 
 ### Resume Logic

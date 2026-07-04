@@ -79,10 +79,11 @@ DEST_EXTENSIONS="$DEST_BASE/extensions"
 
 # Components to install
 COMPONENTS=(
-  "Agents (24 specialized sub-agents)"
-  "Skills (16 workflow orchestrators and utilities)"
-  "Prompt templates (15 command wrappers)"
+  "Agents (25 specialized sub-agents)"
+  "Skills (17 workflow orchestrators and utilities)"
+  "Prompt templates (17 command wrappers)"
   "Post-compaction reminder extension"
+  "Destructive command guard extension"
   "Playwright MCP configuration"
 )
 

@@ -153,6 +153,15 @@ Maister for Pi follows the same architecture as the Claude Code variant, with Pi
 - **Extensions** (`maister-post-compact-reminder`, `maister-destructive-command-guard`) replace Claude Code hooks
 - **`AGENTS.md`** provides the LLM with context about available capabilities
 
+## Runtime Compatibility Notes
+
+Validated against current package schemas:
+
+- `pi-subagents@0.33.1` sets `PI_SUBAGENT_CHILD=1` and `PI_SUBAGENT_CHILD_AGENT=<agent-name>` in child processes, which the destructive-command guard uses.
+- Pi loads TypeScript extensions directly from `.pi/extensions/**/index.ts` via the documented extension loader.
+- `@juicesharp/rpiv-todo@1.20.0` supports `blockedBy`, `addBlockedBy`, `removeBlockedBy`, `owner`, `metadata`, and the `pending` / `in_progress` / `completed` / `deleted` status set used by Maister.
+- `@juicesharp/rpiv-ask-user-question@1.20.0` supports `header`, per-option `preview`, and `multiSelect`; keep calls within 1-4 questions and 2-4 options per question.
+
 ## License
 
 See [LICENSE](../../LICENSE) in the repository root.

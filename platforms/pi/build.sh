@@ -89,9 +89,11 @@ find "$OUT" -name "*.md" | while read f; do
   # 5d. AskUserQuestion → ask_user_question
   sedi 's/AskUserQuestion/ask_user_question/g' "$f"
 
-  # 5e. TaskCreate/TaskUpdate → todo equivalents
-  sedi 's/TaskCreate/todo({ action: "create", ... })/g' "$f"
-  sedi 's/TaskUpdate/todo({ action: "update", ... })/g' "$f"
+  # 5e. TaskCreate/TaskUpdate/TaskList → Pi todo equivalents.
+  #     Use schema-valid examples in generated prose instead of placeholder calls.
+  sedi 's/TaskCreate/todo({ action: "create", subject: "...", status: "pending" })/g' "$f"
+  sedi 's/TaskUpdate/todo({ action: "update", id: <id>, status: "..." })/g' "$f"
+  sedi 's/TaskList/todo({ action: "list" })/g' "$f"
 
   # 5f. Claude Code Skill tool wording → Pi inline skill loading.
   #     Top-level command templates use pi-prompt-template-model `skill:` frontmatter;
@@ -280,6 +282,15 @@ for path in out.rglob("*.md"):
         "Never invoke a skill via subagent tool (`subagent_type`) — it will fail with \"Agent type not found.\"":
             "Never invoke a skill via the subagent tool — it will fail because skills and agents are separate Pi concepts.",
 
+        # Pi package schema parity fixes.
+        "max 5 critical clarifying questions": "up to 4 critical clarifying questions",
+        "Use ask_user_question with all 5 options": "Use ask_user_question in two steps because Pi options are limited to 4: first ask whether this is Product Design; if not, ask the user to choose Development, Performance, Migration, or Research.",
+        "`todo({ action: \"update\", id: <id>, status: \"...\" }) addBlockedBy`": "`todo({ action: \"update\", id: <id>, addBlockedBy: [<dependency-id>] })`",
+        "`todo({ action: \"update\", id: <id>, status: \"...\" })` with `addBlockedBy`": "`todo({ action: \"update\", id: <id>, addBlockedBy: [<dependency-id>] })`",
+        "same `todo({ action: \"update\", id: <id>, status: \"...\" }) addBlockedBy`": "same `todo({ action: \"update\", id: <id>, addBlockedBy: [<dependency-id>] })`",
+        "todo({ action: \"create\", subject: \"...\", status: \"pending\" })/todo({ action: \"update\", id: <id>, status: \"...\" }) tools": "`todo` tool",
+        "`todo({ action: \"create\", subject: \"...\", status: \"pending\" })`/`todo({ action: \"update\", id: <id>, status: \"...\" })`": "`todo` create/update calls",
+
         # Documentation terminology in AGENTS.md generated from the Claude variant.
         "If technical details exist in skill.md, reference them in AGENTS.md/commands":
             "If technical details exist in SKILL.md, reference them in AGENTS.md/prompt templates",
@@ -359,6 +370,20 @@ for path in out.rglob("*.md"):
     text = re.sub(r"\bGrep\b(?=\s*(?:to|for|with|,|/|\)|$))", "`grep`", text)
     text = re.sub(r"\bRead\b(?=\s*(?:to|for|with|,|/|\)|$))", "`read`", text)
 
+    path.write_text(text)
+
+# Rename the docs-manager template file so generated Pi docs no longer point at
+# a Claude-specific filename while preserving source plugin layout.
+docs_template = out / "skills" / "maister-docs-manager" / "references" / "claude-md-template.md"
+agents_template = out / "skills" / "maister-docs-manager" / "references" / "agents-md-template.md"
+if docs_template.exists():
+    docs_template.rename(agents_template)
+    agents_template.write_text(agents_template.read_text().replace("claude-md-template.md", "agents-md-template.md"))
+
+for path in out.rglob("*.md"):
+    text = path.read_text()
+    text = text.replace("references/claude-md-template.md", "references/agents-md-template.md")
+    text = text.replace("claude-md-template.md", "agents-md-template.md")
     path.write_text(text)
 PY
 
@@ -997,6 +1022,8 @@ cat > "$OUT/extensions/maister-destructive-command-guard/index.ts" << 'EOF'
  * available.
  *
  * Reference: https://pi.dev/docs/latest/extensions#writing-an-extension
+ * Runtime note: pi-subagents@0.33.1 sets PI_SUBAGENT_CHILD=1 and
+ * PI_SUBAGENT_CHILD_AGENT=<agent-name> for child processes.
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
@@ -1187,8 +1214,8 @@ This is the Pi Coding Agent variant. Maister's full workflow experience is avail
 Install these via `pi install npm:<package>`:
 - `pi-subagents` — Sub-agent delegation through the `subagent(...)` tool (replaces Claude Code agent delegation)
 - `pi-mcp-adapter` — MCP support (needed for Playwright browser automation)
-- `@juicesharp/rpiv-ask-user-question` — Structured user questionnaires with multi-select
-- `@juicesharp/rpiv-todo` — 4-state task tracking with dependency visualization
+- `@juicesharp/rpiv-ask-user-question` — Structured user questionnaires with multi-select, per-option previews, up to 4 questions per call, and 2-4 options per question
+- `@juicesharp/rpiv-todo` — 4-state task tracking with `blockedBy`/`addBlockedBy` dependency visualization
 - `pi-web-access` — Web search, content extraction, code search, and URL/GitHub/PDF/video fetching
 - `pi-prompt-template-model` — Prompt-template `skill:` frontmatter for reliable `/maister-*` command routing
 
@@ -1217,7 +1244,7 @@ Optional companion:
 - **Unified Work Router**: `/maister-work` injects the Pi-only `maister-work` skill, which classifies/resumes work and then loads the selected workflow skill inline.
 - **Agents**: Invoked via `subagent({ agent: "maister-task-classifier", task: "...", ... })`
 - **Prompt Templates**: Available as `/maister-work`, `/maister-development`, etc. Skill-backed templates inject the correct Maister skill through frontmatter instead of asking the model to run a nested slash command.
-- **Multi-select**: Fully supported by `@juicesharp/rpiv-ask-user-question` — used at phase gates in orchestrator workflows
+- **Multi-select and previews**: Fully supported by `@juicesharp/rpiv-ask-user-question` — used at phase gates in orchestrator workflows. Keep each call within the package schema: 1-4 questions, 2-4 options per question, header max 16 characters.
 
 ### Correct subagent invocation patterns
 

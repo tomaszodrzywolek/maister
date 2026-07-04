@@ -57,7 +57,7 @@ You are an implementation verifier that orchestrates comprehensive quality assur
    - `implementation/work-log.md` (required)
 3. **Read docs/INDEX.md** to understand available standards
 4. **Determine invocation context** (orchestrator or standalone)
-5. **Create task items for verification tracking** using `todo({ action: "create", ... })` tool:
+5. **Create task items for verification tracking** using `todo({ action: "create", subject: "...", status: "pending" })` tool:
    - Subject: "Completeness check", activeForm: "Checking implementation completeness"
    - Subject: "Test suite", activeForm: "Running test suite" — only if NOT skip_test_suite. When skip_test_suite is true, create task pre-completed with `metadata: {skipped: true, reason: "Full test suite passed during implementation phase"}`
    - Subject: "Code review", activeForm: "Running code review" — only if code_review_enabled
@@ -65,7 +65,7 @@ You are an implementation verifier that orchestrates comprehensive quality assur
    - Subject: "Production readiness", activeForm: "Checking production readiness" — only if production_check_enabled
    - Subject: "Reality assessment", activeForm: "Running reality assessment" — only if reality_check_enabled
    - Subject: "Compile report", activeForm: "Compiling verification report"
-6. **Set dependencies** using `todo({ action: "update", ... })` with `addBlockedBy`: "Compile report" blocked by ALL verification tasks above
+6. **Set dependencies** using `todo({ action: "update", id: <id>, addBlockedBy: [<dependency-id>] })`: "Compile report" blocked by ALL verification tasks above
 
 If prerequisites missing, report and stop.
 
@@ -97,7 +97,7 @@ If prerequisites missing, report and stop.
 
 ### Step 2: Set all tasks to in_progress
 
-2. Use `todo({ action: "update", ... })` to set ALL enabled verification tasks to `status: "in_progress"`. For skipped optional reviews, use `todo({ action: "update", ... })` with `status: "completed"` and `metadata: {"skipped": true}`.
+2. Use `todo({ action: "update", id: <id>, status: "..." })` to set ALL enabled verification tasks to `status: "in_progress"`. For skipped optional reviews, use `todo({ action: "update", id: <id>, status: "..." })` with `status: "completed"` and `metadata: {"skipped": true}`.
 
 ### Step 3a: Run test suite (sequential, if NOT skip_test_suite)
 
@@ -148,7 +148,7 @@ subagent tool call (if reality_check_enabled):
 ### Step 4: Process all results
 
 After ALL subagents return:
-1. Use `todo({ action: "update", ... })` to set each verification task to `status: "completed"`
+1. Use `todo({ action: "update", id: <id>, status: "..." })` to set each verification task to `status: "completed"`
 2. Extract status, issues, and findings from each
 3. Aggregate issue counts
 4. Track any critical issues that would affect overall verdict
@@ -164,7 +164,7 @@ After ALL subagents return:
 
 ## Phase 3: Compile Verification Report
 
-Use `todo({ action: "update", ... })` to set "Compile report" task to `status: "in_progress"`.
+Use `todo({ action: "update", id: <id>, status: "..." })` to set "Compile report" task to `status: "in_progress"`.
 
 1. **Compile all findings** from Phase 2
 2. **Determine overall status**:
@@ -189,7 +189,7 @@ Use `todo({ action: "update", ... })` to set "Compile report" task to `status: "
    - Lead with the verdict banner (✅ Passed / ⚠️ Passed with Issues / ❌ Failed) and issue counts; then findings table sorted critical→info with severity badges, per-check section status, fixes-applied list. Link to the md twin in the header
    - Same content as the md — restructure and visualize, never add findings
    - Never block on it: if generation fails, keep the md, note the miss, continue
-5. Use `todo({ action: "update", ... })` to set "Compile report" task to `status: "completed"`
+5. Use `todo({ action: "update", id: <id>, status: "..." })` to set "Compile report" task to `status: "completed"`
 
    Structure (md report — MUST open with the Artifact Summary Contract block):
    - **TL;DR** (3-5 lines max: verdict + issue counts + headline finding)

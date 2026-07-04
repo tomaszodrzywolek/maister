@@ -43,7 +43,7 @@ Full framework rule: `../orchestrator-framework/references/orchestrator-patterns
 ### Step 3: Initialize Workflow
 
 1. **Capture the clock**: run `date -u +"%Y-%m-%dT%H:%M:%SZ"` via Bash NOW — you do NOT know the time from context. Every timestamp written this turn (`created`, `updated`, `generated`, `phases[].started`) uses this value. Date-only or `T00:00:00Z` values are the documented failure mode (orchestrator-patterns.md § 4 Timestamp Rule). Re-run `date` in later turns before writing timestamps.
-2. **Create Task Items**: Use `todo({ action: "create", ... })` for all phases (see Phase Configuration), then set dependencies with `todo({ action: "update", ... }) addBlockedBy`
+2. **Create Task Items**: Use `todo({ action: "create", subject: "...", status: "pending" })` for all phases (see Phase Configuration), then set dependencies with `todo({ action: "update", id: <id>, addBlockedBy: [<dependency-id>] })`
 3. **Create Task Directory**: `.maister/tasks/development/YYYY-MM-DD-task-name/`
 4. **Initialize State**: Create `orchestrator-state.yml` with task info and research reference
 5. **Set up Operator Dashboard** (orchestrator-patterns.md § 8) — first read `.maister/config.yml` and set `orchestrator.options.html_output` (default true if the file/key is absent). **When `html_output` is false, SKIP this entire step** — no `dashboard.html`, no `dashboard-data.js`, no browser auto-open — and proceed. Otherwise: copy `../orchestrator-framework/assets/dashboard.html` to the task root as `dashboard.html`, write the initial `dashboard-data.js` (all phases pending), then **auto-open it in the user's browser** (`open` / `xdg-open` / `start` per platform, passing the plain absolute filesystem path — NEVER a hand-built `file://` URL; on failure just print the path — never block). On resume: re-copy `dashboard.html` only if missing; regenerate `dashboard-data.js` from state; then auto-open it in the browser again (same opener as a new task — the OS focuses an already-open tab rather than duplicating).
@@ -131,7 +131,7 @@ Use for **all development tasks**: bug fixes, enhancements, new features, and an
 **Execute**:
 1. inline skill `maister-codebase-analyzer`
 2. Update state with analysis results
-3. Direct - use ask_user_question for max 5 critical clarifying questions
+3. Direct - use ask_user_question for up to 4 critical clarifying questions
 4. Save clarifications to `analysis/clarifications.md`
 **Output**: `analysis/codebase-analysis.md`, `analysis/clarifications.md`
 **State**: Update `task_context.risk_level`, `phase_summaries.codebase_analysis`, `task_context.clarifications_resolved`
@@ -192,7 +192,7 @@ ask_user_question - Display executive summary before asking. Read `analysis/gap-
 
 ### Phase 3: TDD Red Gate (Conditional)
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 2 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 2 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Write a failing test that reproduces the defect
 **Execute**: Direct - write test, verify it FAILS
@@ -211,7 +211,7 @@ ask_user_question - "TDD red gate complete. Continue to Phase 4?"
 
 ### Phase 4: UI Mockup Generation (Conditional)
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Generate ASCII mockups showing UI integration
 **Execute**: subagent tool - `maister-ui-mockup-generator` subagent
@@ -232,7 +232,7 @@ ask_user_question - "UI mockups complete. Continue to Phase 5?"
 
 ### Phase 5: Technical Approach, Requirements & Specification
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **⛔ ROUTING GUARD**: Read `task_context.task_characteristics` from `orchestrator-state.yml`. If `has_reproducible_defect` is true and Phase 3 is NOT in `completed_phases` → STOP, execute Phase 3 first. If `ui_heavy` is true and Phase 4 is NOT in `completed_phases` → STOP, execute Phase 4 first.
 
@@ -289,7 +289,7 @@ ask_user_question - Display executive summary before asking. Read `implementatio
 
 ### Phase 6: Specification Audit (Recommended)
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 5 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 5 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Independent review of specification before implementation
 **Execute**: subagent tool - `maister-spec-auditor` subagent
@@ -308,7 +308,7 @@ ask_user_question - Display executive summary before asking. Read `verification/
 
 ### Phase 7: Implementation Planning
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 6 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 6 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Break specification into implementation steps
 
@@ -335,7 +335,7 @@ ask_user_question - Display executive summary before asking. Read `implementatio
 
 ### Phase 8: Implementation
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 7 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 7 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Execute the implementation plan
 
@@ -365,7 +365,7 @@ ask_user_question - Display executive summary before asking. Extract from `phase
 
 ### Phase 9: TDD Green Gate (Conditional)
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 8 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 8 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Verify the failing test now passes
 **Execute**: Direct - run the test written in Phase 3
@@ -384,7 +384,7 @@ ask_user_question - "TDD gate passed. Continue to Phase 10?"
 
 ### Phase 10: Verification Options Prompt
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Determine which verification checks to run using tiered decision matrix
 **Execute**: Direct - display plan, confirm/adjust via ask_user_question
@@ -425,7 +425,7 @@ Options: "Code review (Recommended)", "Pragmatic review (Recommended)", "Reality
 
 ### Phase 11: Verification & Issue Resolution
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 10 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 10 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Comprehensive implementation verification with fix-then-reverify cycles
 **Output**: `verification/implementation-verification.md`, optional code-review/pragmatic/reality reports, updated `implementation/work-log.md`
@@ -485,7 +485,7 @@ ask_user_question - Display executive summary: total issues found, issues fixed,
 
 ### Phase 12: E2E Testing (Optional)
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 11 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 11 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 > **⚠ Serialization rule**: Phases 12 and 13 share the Playwright MCP browser instance. They MUST run strictly sequentially. Do NOT dispatch the Phase 12 subagent call and the Phase 13 subagent call in the same assistant message, even when both are enabled. Wait for Phase 12 to return, honor the `→ **MANDATORY GATE** — fires regardless of permission mode, session-reminders, or prior approval patterns. Invoke `ask_user_question` now. Proceeding without a user response is a protocol violation (orchestrator-patterns.md § 2 / § 2.1).` / `ask_user_question` gate below, then start Phase 13. Concurrent dispatch will corrupt both browser sessions.
 
@@ -505,7 +505,7 @@ ask_user_question - "E2E complete. Continue to Phase 13?"
 
 ### Phase 13: User Documentation (Optional)
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 > **⚠ Serialization rule**: Phases 12 and 13 share the Playwright MCP browser instance — see the same rule on Phase 12. Phase 13 MUST NOT be dispatched in the same assistant message as Phase 12, regardless of how the user answered the gate.
 
@@ -527,7 +527,7 @@ ask_user_question - "Documentation complete. Continue to Phase 14?"
 
 ### Phase 14: Finalization
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Complete workflow and provide next steps
 **Execute**: Direct - create summary, update state, guide commit

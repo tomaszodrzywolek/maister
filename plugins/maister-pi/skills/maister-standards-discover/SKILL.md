@@ -57,7 +57,7 @@ Custom scope values are matched against existing `.maister/docs/standards/*/` di
 | 8 | Apply approved standards | Applying standards |
 | 9 | Generate summary report | Generating summary |
 
-**Task Tracking**: At start of Phase 1, use `todo({ action: "create", ... })` for all phases above (pending). Set dependencies: Phases 2-5 blocked by Phase 1 (they run in parallel after planning). Phase 6 blocked by Phases 2-5. Phases 7-9 sequential. At each phase start: `todo({ action: "update", ... })` to `in_progress`. At each phase end: `todo({ action: "update", ... })` to `completed`. For phases skipped due to scope (e.g., Phases 3-4 when `--scope=quick`), mark `completed` with `metadata: {skipped: true, reason: "scope=quick"}`.
+**Task Tracking**: At start of Phase 1, use `todo({ action: "create", subject: "...", status: "pending" })` for all phases above (pending). Set dependencies: Phases 2-5 blocked by Phase 1 (they run in parallel after planning). Phase 6 blocked by Phases 2-5. Phases 7-9 sequential. At each phase start: `todo({ action: "update", id: <id>, status: "..." })` to `in_progress`. At each phase end: `todo({ action: "update", id: <id>, status: "..." })` to `completed`. For phases skipped due to scope (e.g., Phases 3-4 when `--scope=quick`), mark `completed` with `metadata: {skipped: true, reason: "scope=quick"}`.
 
 ---
 

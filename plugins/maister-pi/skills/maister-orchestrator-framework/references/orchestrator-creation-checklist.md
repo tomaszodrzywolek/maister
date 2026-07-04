@@ -18,7 +18,7 @@ Before considering an orchestrator complete, verify ALL items:
 - [ ] **Decision gates** — Phases receiving `decisions_needed` present to user via ask_user_question
 - [ ] **Interactive mode** — `ask_user_question` at every `→ Pause` transition
 - [ ] **Standards discovery** — `.maister/docs/INDEX.md` referenced in spec, plan, implement, verify phases
-- [ ] **todo({ action: "create", ... }) initialization** — Tasks created for all phases at workflow start with `addBlockedBy` dependencies
+- [ ] **todo({ action: "create", subject: "...", status: "pending" }) initialization** — Tasks created for all phases at workflow start with `addBlockedBy` dependencies
 - [ ] **Auto-recovery table** — Max attempts per phase with recovery strategies
 - [ ] **Domain context schema** — Includes `phase_summaries` structure
 

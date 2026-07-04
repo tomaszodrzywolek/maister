@@ -260,7 +260,7 @@ Use this to ensure the project's AGENTS.md properly integrates with the document
 2. If it doesn't exist, ask the user if they want to create it
 3. Look for a documentation reference section in AGENTS.md
 4. If the section doesn't exist or is incomplete:
-   - Read `references/claude-md-template.md` for the template
+   - Read `references/agents-md-template.md` for the template
    - Add the template section to AGENTS.md
 5. Ensure the documentation section is placed prominently in AGENTS.md (near the top)
 6. Verify that the INDEX.md path is correct and the file exists

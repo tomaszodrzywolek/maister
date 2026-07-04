@@ -665,21 +665,21 @@ Subagents are specialized AI agents invoked by skills and orchestrators. All age
 
 ## Progress Tracking with Task System
 
-All orchestrators use `todo({ action: "create", ... })`/`todo({ action: "update", ... })` for real-time progress visibility at two levels:
+All orchestrators use `todo` create/update calls for real-time progress visibility at two levels:
 
 ### Orchestrator Phase Tracking
 
-- At workflow start: `todo({ action: "create", ... })` for all phases (pending), then `todo({ action: "update", ... }) addBlockedBy` for phase dependencies
-- At each phase: `todo({ action: "update", ... })` to `in_progress` (shows spinner with `activeForm`) → execute → `todo({ action: "update", ... })` to `completed`
+- At workflow start: `todo({ action: "create", subject: "...", status: "pending" })` for all phases (pending), then `todo({ action: "update", id: <id>, addBlockedBy: [<dependency-id>] })` for phase dependencies
+- At each phase: `todo({ action: "update", id: <id>, status: "..." })` to `in_progress` (shows spinner with `activeForm`) → execute → `todo({ action: "update", id: <id>, status: "..." })` to `completed`
 - Optionally set `owner` when delegating to skills/agents, and `metadata` for timing/artifacts
 - State file (`orchestrator-state.yml`) is source of truth for resume logic
 - Task system mirrors state for UX and provides dependency visualization
 
 ### Implementation Task Group Tracking
 
-- At planning: `todo({ action: "create", ... })` for each task group with `Dependencies` AND `Files to Modify` declared in `implementation-plan.md`
+- At planning: `todo({ action: "create", subject: "...", status: "pending" })` for each task group with `Dependencies` AND `Files to Modify` declared in `implementation-plan.md`
 - During execution: executor computes parallel waves from dependencies + file overlap, then dispatches all groups in a wave concurrently via parallel `subagent({ tasks: [...] })` calls. The `--sequential` flag (read from `orchestrator-state.yml` as `orchestrator.options.sequential`) forces the legacy one-at-a-time loop
-- `todo({ action: "update", ... })` to `in_progress` on wave dispatch → execute → `todo({ action: "update", ... })` to `completed` on each group's return
+- `todo({ action: "update", id: <id>, status: "..." })` to `in_progress` on wave dispatch → execute → `todo({ action: "update", id: <id>, status: "..." })` to `completed` on each group's return
 - Markdown checkboxes in `implementation-plan.md` remain the step-level source of truth
 - Task system provides group-level visibility with dependencies, timing, ownership, and wave membership
 
@@ -698,8 +698,8 @@ This is the Pi Coding Agent variant. Maister's full workflow experience is avail
 Install these via `pi install npm:<package>`:
 - `pi-subagents` — Sub-agent delegation through the `subagent(...)` tool (replaces Claude Code agent delegation)
 - `pi-mcp-adapter` — MCP support (needed for Playwright browser automation)
-- `@juicesharp/rpiv-ask-user-question` — Structured user questionnaires with multi-select
-- `@juicesharp/rpiv-todo` — 4-state task tracking with dependency visualization
+- `@juicesharp/rpiv-ask-user-question` — Structured user questionnaires with multi-select, per-option previews, up to 4 questions per call, and 2-4 options per question
+- `@juicesharp/rpiv-todo` — 4-state task tracking with `blockedBy`/`addBlockedBy` dependency visualization
 - `pi-web-access` — Web search, content extraction, code search, and URL/GitHub/PDF/video fetching
 - `pi-prompt-template-model` — Prompt-template `skill:` frontmatter for reliable `/maister-*` command routing
 
@@ -728,7 +728,7 @@ Optional companion:
 - **Unified Work Router**: `/maister-work` injects the Pi-only `maister-work` skill, which classifies/resumes work and then loads the selected workflow skill inline.
 - **Agents**: Invoked via `subagent({ agent: "maister-task-classifier", task: "...", ... })`
 - **Prompt Templates**: Available as `/maister-work`, `/maister-development`, etc. Skill-backed templates inject the correct Maister skill through frontmatter instead of asking the model to run a nested slash command.
-- **Multi-select**: Fully supported by `@juicesharp/rpiv-ask-user-question` — used at phase gates in orchestrator workflows
+- **Multi-select and previews**: Fully supported by `@juicesharp/rpiv-ask-user-question` — used at phase gates in orchestrator workflows. Keep each call within the package schema: 1-4 questions, 2-4 options per question, header max 16 characters.
 
 ### Correct subagent invocation patterns
 

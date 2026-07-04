@@ -23,7 +23,7 @@ Initialize `.maister/docs/` with intelligent project analysis and meaningful doc
 | 7 | Validate | Validating initialization |
 | 8 | Discover coding standards | Discovering coding standards |
 
-**Task Tracking**: Before Phase 1, use `todo({ action: "create", ... })` for all phases (pending), then set sequential dependencies with `todo({ action: "update", ... }) addBlockedBy`. At each phase: `todo({ action: "update", ... })` to `in_progress` → execute → `todo({ action: "update", ... })` to `completed`. If skipped (e.g., user selects "Update existing"), mark skipped phases as `completed` with `metadata: {skipped: true}`.
+**Task Tracking**: Before Phase 1, use `todo({ action: "create", subject: "...", status: "pending" })` for all phases (pending), then set sequential dependencies with `todo({ action: "update", id: <id>, addBlockedBy: [<dependency-id>] })`. At each phase: `todo({ action: "update", id: <id>, status: "..." })` to `in_progress` → execute → `todo({ action: "update", id: <id>, status: "..." })` to `completed`. If skipped (e.g., user selects "Update existing"), mark skipped phases as `completed` with `metadata: {skipped: true}`.
 
 ---
 

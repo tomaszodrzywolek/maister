@@ -229,7 +229,7 @@ Please choose the workflow type that best fits:
 Which type best describes your task?
 ```
 
-Use ask_user_question with all 5 options
+Use ask_user_question in two steps because Pi options are limited to 4: first ask whether this is Product Design; if not, ask the user to choose Development, Performance, Migration, or Research.
 
 **Handle User Override**:
 - Accept user's choice without question

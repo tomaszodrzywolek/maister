@@ -246,12 +246,12 @@ Follow standards from `.maister/docs/standards/`:
 
 After writing the implementation plan file, create structured task items for group-level tracking:
 
-1. For each task group, call `todo({ action: "create", ... })`:
+1. For each task group, call `todo({ action: "create", subject: "...", status: "pending" })`:
    - `subject`: "Group N: [Layer Name]" (e.g., "Group 1: Database Layer")
    - `description`: Acceptance criteria + step count + dependency info
    - `activeForm`: "Implementing [Layer Name]"
 
-2. Set dependencies with `todo({ action: "update", ... }) addBlockedBy` mirroring the plan's dependency chain:
+2. Set dependencies with `todo({ action: "update", id: <id>, addBlockedBy: [<dependency-id>] })` mirroring the plan's dependency chain:
    - Database → API → Frontend (matches `Dependencies:` field in each group)
    - All implementation groups → Test Review & Gap Analysis (if present)
 
@@ -354,8 +354,8 @@ Before completing, verify:
 
 ### Task Items Created
 
-- One `todo({ action: "create", ... })` per task group
-- Dependencies set via `todo({ action: "update", ... }) addBlockedBy`
+- One `todo({ action: "create", subject: "...", status: "pending" })` per task group
+- Dependencies set via `todo({ action: "update", id: <id>, addBlockedBy: [<dependency-id>] })`
 
 ### Structured Result (returned to orchestrator)
 

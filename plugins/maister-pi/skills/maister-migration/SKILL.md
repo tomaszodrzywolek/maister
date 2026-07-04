@@ -31,7 +31,7 @@ Full framework rule: `../orchestrator-framework/references/orchestrator-patterns
 ### Step 2: Initialize Workflow
 
 1. **Capture the clock**: run `date -u +"%Y-%m-%dT%H:%M:%SZ"` via Bash NOW — you do NOT know the time from context. Every timestamp written this turn (`created`, `updated`, `generated`, `phases[].started`) uses this value. Date-only or `T00:00:00Z` values are the documented failure mode (orchestrator-patterns.md § 4 Timestamp Rule). Re-run `date` in later turns before writing timestamps.
-2. **Create Task Items**: Use `todo({ action: "create", ... })` for all phases (see Phase Configuration), then set dependencies with `todo({ action: "update", ... }) addBlockedBy`
+2. **Create Task Items**: Use `todo({ action: "create", subject: "...", status: "pending" })` for all phases (see Phase Configuration), then set dependencies with `todo({ action: "update", id: <id>, addBlockedBy: [<dependency-id>] })`
 3. **Create Task Directory**: `.maister/tasks/migrations/YYYY-MM-DD-task-name/`
 4. **Initialize State**: Create `orchestrator-state.yml` with migration context
 5. **Set up Operator Dashboard** (orchestrator-patterns.md § 8) — first read `.maister/config.yml` and set `orchestrator.options.html_output` (default true if the file/key is absent). **When `html_output` is false, SKIP this entire step** — no `dashboard.html`, no `dashboard-data.js`, no browser auto-open — and proceed. Otherwise: copy `../orchestrator-framework/assets/dashboard.html` to the task root as `dashboard.html`, write the initial `dashboard-data.js` (all phases pending, `task.type: "migration"`), then **auto-open it in the user's browser** (`open` / `xdg-open` / `start` per platform, passing the plain absolute filesystem path — NEVER a hand-built `file://` URL; on failure just print the path — never block). On resume: re-copy `dashboard.html` only if missing; regenerate `dashboard-data.js` from state; then auto-open it in the browser again (same opener as a new task — the OS focuses an already-open tab rather than duplicating).
@@ -118,7 +118,7 @@ Use for:
 **Execute**:
 1. inline skill `maister-codebase-analyzer`
 2. Update state with analysis results
-3. Direct - use ask_user_question for max 5 critical clarifying questions about migration scope, target system, and constraints
+3. Direct - use ask_user_question for up to 4 critical clarifying questions about migration scope, target system, and constraints
 4. Save clarifications to `analysis/clarifications.md`
 **Output**: `analysis/current-state-analysis.md`, `analysis/clarifications.md`
 **State**: Update task_context with current system info, `task_context.clarifications_resolved`
@@ -149,7 +149,7 @@ ask_user_question - Display executive summary before asking. Extract from gap an
 
 ### Phase 3: Migration Requirements & Strategy Specification
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 2 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 2 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Gather migration requirements, then create detailed migration specification with rollback procedures
 **Execute**:
@@ -180,7 +180,7 @@ ask_user_question - Display executive summary before asking. Read `implementatio
 
 ### Phase 4: Implementation Planning
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 3 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 3 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Break migration into task groups with rollback steps
 **Execute**: subagent tool - `maister-implementation-planner` subagent
@@ -197,7 +197,7 @@ ask_user_question - Display executive summary before asking. Read `implementatio
 
 ### Phase 5: Migration Execution
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 4 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 4 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Execute migration steps with incremental verification
 
@@ -229,7 +229,7 @@ ask_user_question - Display executive summary before asking. Extract from `phase
 
 ### Phase 6: Verification + Compatibility Testing
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 5 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 5 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Verify migration success with compatibility and rollback testing
 **Execute**: inline skill `maister-implementation-verifier`
@@ -255,7 +255,7 @@ ask_user_question - Display executive summary before asking. Extract from verifi
 
 ### Phase 7: Migration Issue Resolution (Conditional)
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 6 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from Phase 6 in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Fix verification issues through direct editing and re-verification
 **Execute**: Direct - apply fixes, re-verify
@@ -288,7 +288,7 @@ ask_user_question - Display executive summary: total issues found, issues fixed,
 
 ### Phase 8: Documentation (Optional)
 
-> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", ... })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
+> **Phase entry self-check**: Before executing this phase, locate the `ask_user_question` tool call from the preceding phase in this conversation. If you cannot point to its call ID, STOP and fire that gate now. State updates (`completed_phases`, `todo({ action: "update", id: <id>, status: "..." })`) without a corresponding `ask_user_question` call are protocol violations — never paper over a missed gate by updating state.
 
 **Purpose**: Create migration guide for end users
 **Execute**: subagent tool - `maister-user-docs-generator` subagent

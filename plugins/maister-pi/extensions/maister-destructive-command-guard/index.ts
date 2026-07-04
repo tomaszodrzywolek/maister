@@ -7,6 +7,8 @@
  * available.
  *
  * Reference: https://pi.dev/docs/latest/extensions#writing-an-extension
+ * Runtime note: pi-subagents@0.33.1 sets PI_SUBAGENT_CHILD=1 and
+ * PI_SUBAGENT_CHILD_AGENT=<agent-name> for child processes.
  */
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
 
