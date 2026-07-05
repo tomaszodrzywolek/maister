@@ -1,14 +1,6 @@
 ---
 name: maister-solution-brainstormer
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Generates structured solution alternatives from research synthesis and user preferences. Produces multi-perspective trade-off analysis with scope guardrails and convergence recommendation. Non-interactive content generator.

@@ -1,17 +1,6 @@
 ---
 name: maister-e2e-test-verifier
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
-  - write
-  - edit
-  - mcp:playwright
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, write, edit, mcp:playwright
 systemPromptMode: append
 inheritProjectContext: true
 description: Executes runtime browser verification using Playwright MCP tools to verify implementation behavior against specifications. Does NOT generate test files — performs live interactive verification with evidence collection.

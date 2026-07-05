@@ -1,14 +1,6 @@
 ---
 name: maister-spec-auditor
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Specification audit specialist with senior auditor perspective. Independently verifies completeness, detects ambiguities, validates implementability with evidence-based assessment. Never trusts claims - examines codebase and uses Azure/GitHub CLI for external verification.

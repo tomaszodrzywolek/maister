@@ -1,16 +1,6 @@
 ---
 name: maister-html-companion-writer
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
-  - write
-  - edit
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, write, edit
 systemPromptMode: append
 inheritProjectContext: true
 description: Generates an HTML companion report from a single finalized markdown artifact, following the shared style guide. Used by orchestrators that write artifacts inline (e.g. product-design) and therefore have no artifact-producing subagent to attach a companion to. Reads one md file, writes its sibling .html. Does not interact with users.

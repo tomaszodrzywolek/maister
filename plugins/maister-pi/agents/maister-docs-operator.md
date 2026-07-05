@@ -1,16 +1,6 @@
 ---
 name: maister-docs-operator
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
-  - write
-  - edit
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, write, edit
 systemPromptMode: append
 inheritProjectContext: true
 description: Internal documentation management service. Executes docs-manager operations and returns results to the calling workflow.

@@ -1,14 +1,6 @@
 ---
 name: maister-research-planner
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Research planning specialist creating structured research plans from research questions. Analyzes objectives, determines methodology, identifies data sources (codebase, documentation, web), and defines analysis frameworks.

@@ -396,71 +396,23 @@ for agent_file in "$OUT/agents"/*.md; do
 
   case "$base" in
     task-classifier|gap-analyzer|code-reviewer|code-quality-pragmatist|bottleneck-analyzer|spec-auditor|reality-assessor|research-planner|information-gatherer|research-synthesizer|solution-brainstormer|solution-designer|production-readiness-checker|implementation-completeness-checker|project-analyzer|specification-creator|implementation-planner)
-      tools_yaml="tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content"
+      tools_yaml="tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content"
       ;;
     task-group-implementer|docs-operator|html-companion-writer)
-      tools_yaml="tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
-  - write
-  - edit"
+      tools_yaml="tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, write, edit"
       ;;
     e2e-test-verifier|user-docs-generator)
-      tools_yaml="tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
-  - write
-  - edit
-  - mcp:playwright"
+      tools_yaml="tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, write, edit, mcp:playwright"
       ;;
     codebase-analysis-reporter|ui-mockup-generator)
-      tools_yaml="tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
-  - subagent"
+      tools_yaml="tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, subagent"
       ;;
     test-suite-runner)
-      tools_yaml="tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash"
+      tools_yaml="tools: read, grep, find, ls, bash"
       ;;
     *)
       echo "      Warning: Unknown agent tier for $base, using minimal defaults"
-      tools_yaml="tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash"
+      tools_yaml="tools: read, grep, find, ls, bash"
       ;;
   esac
 

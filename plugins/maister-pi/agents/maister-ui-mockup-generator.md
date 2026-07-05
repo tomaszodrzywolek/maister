@@ -1,15 +1,6 @@
 ---
 name: maister-ui-mockup-generator
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
-  - subagent
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, subagent
 systemPromptMode: append
 inheritProjectContext: true
 description: Generates ASCII mockups showing UI layout and integration with existing components. Analyzes codebase to identify current layout patterns, reusable components, and navigation structure. Creates annotated diagrams showing where new UI elements fit. Use for UI-heavy features and enhancements.

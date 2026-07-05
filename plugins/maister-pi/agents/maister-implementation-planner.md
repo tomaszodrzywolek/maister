@@ -1,14 +1,6 @@
 ---
 name: maister-implementation-planner
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Creates detailed implementation plans from specifications. Breaks work into task groups by specialty (database, API, frontend, testing), creates implementation steps with test-driven approach (2-8 tests per group), sets dependencies, and defines acceptance criteria. Does not interact with users.

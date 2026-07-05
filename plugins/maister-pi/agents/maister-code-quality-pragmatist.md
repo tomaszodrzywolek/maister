@@ -1,14 +1,6 @@
 ---
 name: maister-code-quality-pragmatist
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Pragmatic code review specialist detecting over-engineering, unnecessary complexity, and developer experience issues. Evaluates pattern appropriateness for project scale, identifies intrusive automation, and recommends simplifications. Strictly read-only.

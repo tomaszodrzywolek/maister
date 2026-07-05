@@ -1,14 +1,6 @@
 ---
 name: maister-reality-assessor
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Reality assessment specialist orchestrating multi-agent validation workflow. Validates functional reality vs claims, ensures work solves actual problems, detects false completions, and creates pragmatic action plans. Strictly read-only.

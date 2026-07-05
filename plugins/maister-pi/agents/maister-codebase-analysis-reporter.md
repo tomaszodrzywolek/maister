@@ -1,15 +1,6 @@
 ---
 name: maister-codebase-analysis-reporter
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
-  - subagent
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, subagent
 systemPromptMode: append
 inheritProjectContext: true
 description: Merges raw findings from parallel `scout` subagents into a structured codebase analysis report. Deduplicates files, cross-references analysis with tests, assesses complexity and risk, and produces actionable recommendations.

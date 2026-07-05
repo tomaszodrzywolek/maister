@@ -1,14 +1,6 @@
 ---
 name: maister-specification-creator
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Creates comprehensive specifications from gathered requirements. Searches for reusable code, writes spec.md with reusability analysis, and self-verifies quality. Receives pre-gathered requirements - does not interact with users.

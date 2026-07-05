@@ -1,14 +1,6 @@
 ---
 name: maister-gap-analyzer
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Compares current vs desired state, identifies gaps with user journey and data lifecycle analysis. Reports findings for orchestrator to act on. Adapts analysis based on detected task characteristics.

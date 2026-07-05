@@ -1,16 +1,6 @@
 ---
 name: maister-task-group-implementer
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
-  - write
-  - edit
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, write, edit
 systemPromptMode: append
 inheritProjectContext: true
 description: Execute a single task group from an implementation plan with continuous standards discovery. Writes code, runs tests, returns structured execution report. Does NOT mark checkboxes - main agent handles progress tracking.

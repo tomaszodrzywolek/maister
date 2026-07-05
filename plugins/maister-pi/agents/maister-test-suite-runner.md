@@ -1,11 +1,6 @@
 ---
 name: maister-test-suite-runner
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
+tools: read, grep, find, ls, bash
 systemPromptMode: append
 inheritProjectContext: true
 description: Runs the full test suite and analyzes results. Identifies test command from project config, executes all tests (not just feature tests), reports pass/fail counts, flags regressions in unrelated areas, and categorizes failures. Read-only - reports issues without fixing. Does not interact with users.

@@ -1,14 +1,6 @@
 ---
 name: maister-project-analyzer
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Analyzes project codebase to detect tech stack, architecture, and conventions for documentation generation. Use for existing/legacy projects to auto-generate meaningful documentation.

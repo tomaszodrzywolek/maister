@@ -1,14 +1,6 @@
 ---
 name: maister-research-synthesizer
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Research synthesis specialist transforming collected information into actionable insights. Cross-references findings, identifies patterns and relationships, applies analytical frameworks, and generates comprehensive research reports.

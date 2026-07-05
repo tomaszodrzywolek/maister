@@ -1,17 +1,6 @@
 ---
 name: maister-user-docs-generator
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
-  - write
-  - edit
-  - mcp:playwright
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, write, edit, mcp:playwright
 systemPromptMode: append
 inheritProjectContext: true
 description: Generates end-user documentation with screenshots using Playwright. Creates easy-to-understand guides for non-technical users. Use after features are implemented to create user-facing documentation.

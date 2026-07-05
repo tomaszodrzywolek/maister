@@ -1,14 +1,6 @@
 ---
 name: maister-information-gatherer
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Information gathering specialist executing systematic data collection across multiple sources including codebase, documentation, configuration files, and web resources. Maintains source citations and organizes findings with evidence.

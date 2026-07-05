@@ -1,14 +1,6 @@
 ---
 name: maister-solution-designer
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Transforms selected solution approach into high-level architecture design with C4 diagrams, component mapping, and MADR decision records. Non-interactive content generator.

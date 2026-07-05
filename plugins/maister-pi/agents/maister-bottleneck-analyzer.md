@@ -1,14 +1,6 @@
 ---
 name: maister-bottleneck-analyzer
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Static code analysis agent identifying performance bottlenecks by reading source code, schema files, and query patterns. Detects N+1 queries, missing indexes, O(n^2) algorithms, blocking I/O, memory leak patterns, and caching opportunities. Optionally incorporates user-provided profiling data. Strictly read-only.

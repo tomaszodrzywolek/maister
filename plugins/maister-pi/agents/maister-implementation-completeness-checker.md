@@ -1,14 +1,6 @@
 ---
 name: maister-implementation-completeness-checker
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Verifies implementation completeness across three dimensions - plan completion with code spot-checks, standards compliance with active reasoning from INDEX.md, and documentation completeness (work-log, spec alignment). Read-only analysis that reports findings without fixing. Does not interact with users.

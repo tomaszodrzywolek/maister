@@ -1,14 +1,6 @@
 ---
 name: maister-production-readiness-checker
-tools:
-  - read
-  - grep
-  - find
-  - ls
-  - bash
-  - web_search
-  - fetch_content
-  - get_search_content
+tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content
 systemPromptMode: append
 inheritProjectContext: true
 description: Automated production deployment readiness verification. Analyzes configuration management, monitoring setup, error handling, performance scalability, security hardening, and deployment considerations. Provides GO/NO-GO deployment recommendation with categorized blockers and concerns. Read-only - reports issues without fixing. Does not interact with users.
